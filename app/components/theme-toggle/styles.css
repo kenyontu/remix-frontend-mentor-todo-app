@@ -1,0 +1,24 @@
+.toggle-theme-btn {
+  --theme-icon-size: 1rem;
+  border: none;
+  border-radius: var(--radius-outline);
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0.12rem 0.12rem 0 0.12rem;
+}
+
+.toggle-theme-btn:focus {
+  outline: 1px solid var(--clr-white);
+  outline-offset: 0.2rem;
+}
+
+.toggle-theme-btn img {
+  height: var(--theme-icon-size);
+  width: var(--theme-icon-size);
+}
+
+@media only screen and (min-width: 786px) {
+  .toggle-theme-btn {
+    --theme-icon-size: 1.6rem;
+  }
+}

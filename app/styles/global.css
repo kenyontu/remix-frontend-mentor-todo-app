@@ -1,0 +1,163 @@
+/* Custom properties */
+
+:root {
+  /* Colors */
+
+  --clr-white: white;
+
+  --clr-blue-200: hsl(220, 98%, 61%);
+
+  --clr-gray-100: hsl(0, 0%, 98%);
+  --clr-gray-300: hsl(252, 11%, 91%);
+
+  --clr-dark-blue-800: hsl(235, 24%, 19%);
+  --clr-dark-blue-900: hsl(235, 21%, 11%);
+
+  --clr-grayish-blue-200: hsl(236, 33%, 92%);
+  --clr-grayish-blue-300: hsl(234, 39%, 85%);
+  --clr-grayish-blue-400: hsl(233, 11%, 84%);
+  --clr-grayish-blue-600: hsl(236, 9%, 61%);
+  --clr-grayish-blue-700: hsl(235, 13%, 37%);
+  --clr-grayish-blue-800: hsl(235, 19%, 35%);
+  --clr-grayish-blue-900: hsl(235, 17%, 26%);
+
+  --clr-gradient-check-blue: hsl(192, 100%, 67%);
+  --clr-gradient-check-pink: hsl(280, 87%, 65%);
+
+  /* Font families */
+
+  --ff-josefin-sans: 'Josefin Sans', sans-serif;
+
+  /* Font weights */
+
+  --fw-josefin-sans-400: 400;
+  --fw-josefin-sans-700: 700;
+
+  /* Sizes */
+
+  --sz-content-side-padding: 1.5rem;
+  --sz-content-max-width: unset;
+
+  /* Border radius */
+
+  --radius-todo: 5px;
+  --radius-outline: 5px;
+}
+
+/* General styles */
+
+/* Light mode colors */
+html {
+  --clr-background: var(--clr-gray-100);
+  --background: url('/images/bg-mobile-light.jpg');
+
+  /* Header colors */
+  --clr-header-title: var(--clr-white);
+
+  /* Todo colors */
+  --clr-todo-bg: var(--clr-white);
+  --clr-todo-check-border: var(--clr-grayish-blue-200);
+  --clr-todo-check-border-hover: var(--clr-grayish-blue-600);
+  --clr-todo-check-checked-bg: url('/images/icon-check.svg'),
+    linear-gradient(
+      -25deg,
+      var(--clr-gradient-check-pink),
+      var(--clr-gradient-check-blue)
+    );
+  --clr-todo-placeholder-text: var(--clr-grayish-blue-600);
+  --clr-todo-description: var(--clr-dark-blue-800);
+  --clr-todo-description-completed: var(--clr-grayish-blue-400);
+  --clr-todo-delete-btn-outline: var(--clr-dark-blue-800);
+  --clr-todo-divider: var(--clr-gray-300);
+  --clr-no-todos-msg: var(--clr-grayish-blue-400);
+
+  /* Bottom Bar */
+  --clr-bottom-bar-bg: var(--clr-white);
+  --clr-bottom-bar-text: var(--clr-grayish-blue-600);
+  --clr-bottom-bar-text-hover: var(--clr-grayish-blue-800);
+
+  /* Todo filter */
+  --clr-todo-filter-bg: var(--clr-white);
+  --clr-todo-filter-inactive: var(--clr-grayish-blue-400);
+  --clr-todo-filter-inactive-hover: var(--clr-grayish-blue-600);
+  --clr-todo-filter-active: var(--clr-blue-200);
+}
+
+/* Dark mode colors */
+html.dark {
+  --clr-background: var(--clr-dark-blue-900);
+  --background: url('/images/bg-mobile-dark.jpg') no-repeat;
+
+  /* Todo colors */
+  --clr-todo-bg: var(--clr-dark-blue-800);
+  --clr-todo-check-border: var(--clr-grayish-blue-800);
+  --clr-todo-check-border-hover: var(--clr-grayish-blue-00);
+  --clr-todo-placeholder-text: var(--clr-grayish-blue-600);
+  --clr-todo-description: var(--clr-grayish-blue-300);
+  --clr-todo-description-completed: var(--clr-grayish-blue-700);
+  --clr-todo-delete-btn-outline: var(--clr-grayish-blue-700);
+  --clr-todo-divider: var(--clr-grayish-blue-900);
+  --clr-no-todos-msg: var(--clr-grayish-blue-700);
+
+  /* Bottom Bar */
+  --clr-bottom-bar-bg: var(--clr-dark-blue-800);
+  --clr-bottom-bar-text: var(--clr-grayish-blue-700);
+  --clr-bottom-bar-text-hover: var(--clr-grayish-blue-600);
+
+  /* Todo filter */
+  --clr-todo-filter-bg: var(--clr-dark-blue-800);
+  --clr-todo-filter-inactive: var(--clr-grayish-blue-700);
+  --clr-todo-filter-active: var(--clr-blue-200);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 375px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: var(--ff-josefin-sans);
+  font-size: 16px;
+  background-color: var(--clr-background);
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+input,
+button {
+  font-family: inherit;
+}
+
+@media only screen and (min-width: 420px) {
+  :root {
+    --sz-content-max-width: 400px;
+  }
+}
+
+@media only screen and (min-width: 520px) {
+  :root {
+    --sz-content-max-width: 500px;
+  }
+
+  html {
+    --background: url('/images/bg-desktop-light.jpg');
+  }
+
+  html.dark {
+    --background: url('/images/bg-desktop-dark.jpg');
+  }
+}
+
+@media only screen and (min-width: 786px) {
+  :root {
+    --sz-content-max-width: 540px;
+  }
+}
