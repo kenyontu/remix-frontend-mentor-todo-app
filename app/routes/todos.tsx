@@ -125,10 +125,10 @@ export default function TodosPage() {
 
   const showNoTodoMessage =
     filter === 'active'
-      ? activeCount === 0
+      ? activeCount === 0 && todosBeingCreated.length === 0
       : filter === 'completed'
       ? completedCount === 0
-      : activeCount + completedCount === 0
+      : activeCount + completedCount === 0 && todosBeingCreated.length === 0
 
   return (
     <DndProvider backend={HTML5Backend}>
