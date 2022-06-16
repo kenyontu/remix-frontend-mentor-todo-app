@@ -190,6 +190,7 @@ export default function TodosPage() {
               <TodoCreator
                 key={todoBeingCreated.operationId}
                 todo={todoBeingCreated}
+                hidden={filter === 'completed'}
                 onFinish={() =>
                   setTodosBeingCreated(
                     todosBeingCreated.filter(
@@ -229,9 +230,10 @@ export default function TodosPage() {
 type TodoCreatorProps = {
   todo: TodoBeingCreated
   onFinish: () => void
+  hidden?: boolean
 }
 
-function TodoCreator({ todo, onFinish }: TodoCreatorProps) {
+function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
   const create = useFetcher()
 
   useEffect(() => {
@@ -253,6 +255,7 @@ function TodoCreator({ todo, onFinish }: TodoCreatorProps) {
   return (
     <TodoItem
       optimistic
+      hidden={hidden}
       todo={{
         id: '',
         previous: null,
