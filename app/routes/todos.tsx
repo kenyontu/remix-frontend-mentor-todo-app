@@ -98,29 +98,29 @@ export const action: ActionFunction = async ({ request }) => {
   if (!user) return redirect('/')
 
   const formData = await request.formData()
-  const { _action, ...values } = Object.fromEntries(formData.entries())
+  const action = Object.fromEntries(formData.entries()) as Action
 
-  switch (_action) {
+  switch (action._action) {
     case 'postTodo':
       const todo: NewTodo = {
         userId: user.id,
-        text: values.text as string,
+        text: action.text,
         completed: formData.has('completed'),
       }
       return await createTodo(user.id, todo)
 
     case 'patchDone':
-      return await updateTodo(values.id as string, {
-        completed: Boolean(values.completed),
+      return await updateTodo(action.id, {
+        completed: Boolean(action.completed),
       })
 
-    case 'patchDescription':
-      return await updateTodo(values.id as string, {
-        text: values.text as string,
+    case 'patchText':
+      return await updateTodo(action.id, {
+        text: action.text,
       })
 
     case 'deleteTodo':
-      return await deleteTodo(values.id as string)
+      return await deleteTodo(action.id)
 
     case 'deleteDone':
       return await deleteDone(user.id)
