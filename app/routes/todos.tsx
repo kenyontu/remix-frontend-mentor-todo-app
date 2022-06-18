@@ -136,20 +136,8 @@ export default function TodosPage() {
   const clearCompleted = useFetcher()
 
   const orderedTodos = useOrderedTodos(todos, lastTodoId)
-  const optimisticTodoMap = useOptimisticTodoMap(orderedTodos)
-
-  const { activeCount, completedCount } = orderedTodos.reduce(
-    (counters, todo) => {
-      const optimistic = optimisticTodoMap.get(todo.id) as OptimisticTodo
-
-      return optimistic.isDeleted
-        ? counters
-        : optimistic.isCompleted
-        ? { ...counters, completedCount: counters.completedCount + 1 }
-        : { ...counters, activeCount: counters.activeCount + 1 }
-    },
-    { activeCount: 0, completedCount: 0 }
-  )
+  const optimisticTodos = useOptimisticTodos(orderedTodos)
+  const { activeCount, completedCount } = useTodoCounters(optimisticTodos)
 
   const showNoTodoMessage =
     filter === 'active'
@@ -196,20 +184,17 @@ export default function TodosPage() {
                 <p>No todos</p>
               </div>
             )}
-            {orderedTodos.map((todo) => {
+            {orderedTodos.map((todo, index) => {
               // With Remix, since we might have ongoing submissions in the
-              // TodoItem component, we cannot unmount it. This is why we
-              // hide it instead of simply filtering the list
-              const optimistic = optimisticTodoMap.get(
-                todo.id
-              ) as OptimisticTodo
+              // TodoItem component, we cannot unmount it. What we do instead
+              // is hide the item so it is not visible to the user
 
-              const isHidden = optimistic.isDeleted
+              const isHidden = todo.isDeleted
                 ? true
                 : filter === 'active'
-                ? optimistic.isCompleted
+                ? todo.completed
                 : filter === 'completed'
-                ? !optimistic.isCompleted
+                ? !todo.completed
                 : false
 
               return <TodoItem key={todo.id} todo={todo} hidden={isHidden} />
@@ -423,9 +408,9 @@ export function useOrderedTodos(todos: Todo[], lastTodoId: string | null) {
   return orderedTodos
 }
 
-type OptimisticTodo = {
-  isCompleted: boolean
-  isDeleted: boolean
+type OptimisticTodo = Todo & {
+  isDeleted?: boolean
+  isOptimistic?: boolean
 }
 
 /**
@@ -437,49 +422,64 @@ type OptimisticTodo = {
  *
  * @returns A map with the optimistic values of each todo
  */
-function useOptimisticTodoMap(todos: Todo[]) {
+function useOptimisticTodos(todos: Todo[]) {
   const fetchers = useFetchers()
 
   const map: Map<string, OptimisticTodo> = new Map()
 
   todos.forEach((todo) => {
-    map.set(todo.id, { isCompleted: todo.completed, isDeleted: false })
+    map.set(todo.id, todo)
   })
 
   fetchers.forEach((fetcher) => {
     if (!fetcher.submission) return
 
-    const { _action, id, ...values } = Object.fromEntries(
+    const action = Object.fromEntries(
       fetcher.submission.formData.entries()
-    )
-    switch (_action) {
+    ) as Action
+
+    switch (action._action) {
       case 'deleteTodo':
-        map.set(
-          id as string,
-          {
-            ...map.get(id as string),
+        if (map.has(action.id))
+          map.set(action.id, {
+            ...(map.get(action.id) as OptimisticTodo),
+            isOptimistic: true,
             isDeleted: true,
-          } as OptimisticTodo
-        )
+          })
         break
 
       case 'patchDone':
-        map.set(
-          id as string,
-          {
-            ...map.get(id as string),
-            isCompleted: Boolean(values.completed),
-          } as OptimisticTodo
-        )
+        if (map.has(action.id))
+          map.set(action.id, {
+            ...(map.get(action.id) as OptimisticTodo),
+            completed: Boolean(action.completed),
+            isOptimistic: true,
+          })
         break
 
       case 'deleteDone':
         map.forEach((value, key) => {
-          if (value.isCompleted) map.set(key, { ...value, isDeleted: true })
+          if (value.completed)
+            map.set(key, { ...value, isDeleted: true, isOptimistic: true })
         })
         break
     }
   })
 
-  return map
+  return Array.from(map.values())
+}
+
+function useTodoCounters(todos: OptimisticTodo[]) {
+  let activeCount = 0
+
+  for (let i = 0; i < todos.length; i++) {
+    if (todos[i].isDeleted || todos[i].completed) continue
+
+    activeCount++
+  }
+
+  return {
+    activeCount,
+    completedCount: todos.length - activeCount,
+  }
 }
