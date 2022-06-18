@@ -65,6 +65,34 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json(response)
 }
 
+type Action =
+  | {
+      _action: 'postTodo'
+      text: string
+    }
+  | {
+      _action: 'patchDone'
+      id: string
+      completed: string
+    }
+  | {
+      _action: 'patchText'
+      id: string
+      text: string
+    }
+  | {
+      _action: 'deleteTodo'
+      id: string
+    }
+  | {
+      _action: 'deleteDone'
+    }
+  | {
+      _action: 'changeTodoOrder'
+      id: string
+      previousId: string
+    }
+
 export const action: ActionFunction = async ({ request }) => {
   const user = await getSessionUser(request)
   if (!user) return redirect('/')
