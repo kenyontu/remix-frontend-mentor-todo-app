@@ -339,7 +339,7 @@ function TodoItem({ todo, optimistic = false, hidden = false }: TodoItemProps) {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       descriptionFetcher.submit(
         {
-          _action: 'patchDescription',
+          _action: 'patchText',
           id: todo.id,
           text: event.target.value,
         },
