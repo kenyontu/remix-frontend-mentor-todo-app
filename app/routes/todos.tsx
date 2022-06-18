@@ -155,6 +155,26 @@ export default function TodosPage() {
           <form
             onSubmit={(event) => {
               event.preventDefault()
+              // In Remix, when a form is submitted, the request can be tracked
+              // with useTransaction. It also gives you the submitted values
+              // which we can use to implement optimistic UI. But currently it
+              // only tracks the last made request.
+              //
+              // In my tests with an artificial delay on the server, if I were
+              // to fire multiple submissions, tough all of them would complete
+              // in the end, useTransaction would only give the submission data
+              // of the last submitted request, making implementing optimistic
+              // UI in this scenario impossible.
+              //
+              // My solution was to store the submissions and render a
+              // component for each of them. These components have two
+              // responsabilities:
+              // - Make and track the actual submission
+              // - Render the optimistic Todo while the the request is in
+              //   progress
+              //
+              // And this is why we don't make the actual submission in
+              // here.
               const formData = new FormData(event.currentTarget)
 
               setTodosBeingCreated((todosBeingCreated) => [
@@ -246,10 +266,16 @@ type TodoCreatorProps = {
   hidden?: boolean
 }
 
+/**
+ * Component responsible for handling the create todo requests and showing
+ * the optimistic version of these todos
+ */
 function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
   const create = useFetcher()
 
   useEffect(() => {
+    // The type is 'init' when it still hasn't been used to make a submission
+    // this is when we want to fire our submission
     if (create.type === 'init') {
       create.submit(
         {
@@ -260,7 +286,17 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
         { method: 'post', replace: true }
       )
     }
+
+    // 'done' means that the request finished
     if (create.type === 'done') {
+      // For now I won't be adding error handling, but I already give it some
+      // thought and here is my initial approach:
+      //
+      // 1. Save the content of the error as state of this component
+      // 2. If we have an error in the state, show the error message along
+      //    options to retry or cancel the creation
+      // 3. If the user chooses cancel, we can simply call onFinish and the
+      //    submission will be cleared in the parent component
       onFinish()
     }
   }, [create, todo, onFinish])
