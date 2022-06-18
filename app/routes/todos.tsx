@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { json, redirect } from '@remix-run/node'
 import { useLoaderData, useFetcher, useFetchers } from '@remix-run/react'
-import { DndProvider, useDrag, useDrop } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
 import { nanoid } from 'nanoid'
 import cx from 'classnames'
 import { useDebouncedCallback } from 'use-debounce'
@@ -147,116 +145,110 @@ export default function TodosPage() {
       : activeCount + completedCount === 0 && todosBeingCreated.length === 0
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="container">
-        <div className="background-image" />
-        <Header />
-        <main>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault()
-              // In Remix, when a form is submitted, the request can be tracked
-              // with useTransaction. It also gives you the submitted values
-              // which we can use to implement optimistic UI. But currently it
-              // only tracks the last made request.
-              //
-              // In my tests with an artificial delay on the server, if I were
-              // to fire multiple submissions, tough all of them would complete
-              // in the end, useTransaction would only give the submission data
-              // of the last submitted request, making implementing optimistic
-              // UI in this scenario impossible.
-              //
-              // My solution was to store the submissions and render a
-              // component for each of them. These components have two
-              // responsabilities:
-              // - Make and track the actual submission
-              // - Render the optimistic Todo while the the request is in
-              //   progress
-              //
-              // And this is why we don't make the actual submission in
-              // here.
-              const formData = new FormData(event.currentTarget)
+    <div className="container">
+      <div className="background-image" />
+      <Header />
+      <main>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            // In Remix, when a form is submitted, the request can be tracked
+            // with useTransaction. It also gives you the submitted values
+            // which we can use to implement optimistic UI. But currently it
+            // only tracks the last made request.
+            //
+            // In my tests with an artificial delay on the server, if I were
+            // to fire multiple submissions, tough all of them would complete
+            // in the end, useTransaction would only give the submission data
+            // of the last submitted request, making implementing optimistic
+            // UI in this scenario impossible.
+            //
+            // My solution was to store the submissions and render a
+            // component for each of them. These components have two
+            // responsabilities:
+            // - Make and track the actual submission
+            // - Render the optimistic Todo while the the request is in
+            //   progress
+            //
+            // And this is why we don't make the actual submission in
+            // here.
+            const formData = new FormData(event.currentTarget)
 
-              setTodosBeingCreated((todosBeingCreated) => [
-                ...todosBeingCreated,
-                {
-                  operationId: nanoid(),
-                  todoText: formData.get('text') as string,
-                },
-              ])
+            setTodosBeingCreated((todosBeingCreated) => [
+              ...todosBeingCreated,
+              {
+                operationId: nanoid(),
+                todoText: formData.get('text') as string,
+              },
+            ])
 
-              event.currentTarget.reset()
-            }}
-          >
-            <label className="todo">
-              <span className="check" />
-              <input
-                className="todo-description"
-                type="text"
-                name="text"
-                placeholder="Create a new todo..."
-              />
-            </label>
-          </form>
-          <div className="todo-list">
-            {showNoTodoMessage && (
-              <div className="bottom-divider no-todos">
-                <p>No todos</p>
-              </div>
-            )}
-            {orderedTodos.map((todo, index) => {
-              // With Remix, since we might have ongoing submissions in the
-              // TodoItem component, we cannot unmount it. What we do instead
-              // is hide the item so it is not visible to the user
-
-              const isHidden = todo.isDeleted
-                ? true
-                : filter === 'active'
-                ? todo.completed
-                : filter === 'completed'
-                ? !todo.completed
-                : false
-
-              return <TodoItem key={todo.id} todo={todo} hidden={isHidden} />
-            })}
-            {todosBeingCreated.map((todoBeingCreated) => (
-              <TodoCreator
-                key={todoBeingCreated.operationId}
-                todo={todoBeingCreated}
-                hidden={filter === 'completed'}
-                onFinish={() =>
-                  setTodosBeingCreated(
-                    todosBeingCreated.filter(
-                      (todo) =>
-                        todo.operationId !== todoBeingCreated.operationId
-                    )
-                  )
-                }
-              />
-            ))}
-            <div className="bottom-bar">
-              <span className="bottom-text">{`${activeCount} items left`}</span>
-
-              <TodoFilter
-                className="todo-filter"
-                filter={filter}
-                onFilterChange={setFilter}
-              />
-
-              <clearCompleted.Form method="delete">
-                <input type="hidden" name="_action" value="deleteDone" />
-                <button
-                  className="bottom-text clear-completed-btn"
-                  type="submit"
-                >
-                  Clear Completed
-                </button>
-              </clearCompleted.Form>
+            event.currentTarget.reset()
+          }}
+        >
+          <label className="todo">
+            <span className="check" />
+            <input
+              className="todo-description"
+              type="text"
+              name="text"
+              placeholder="Create a new todo..."
+            />
+          </label>
+        </form>
+        <div className="todo-list">
+          {showNoTodoMessage && (
+            <div className="bottom-divider no-todos">
+              <p>No todos</p>
             </div>
+          )}
+          {orderedTodos.map((todo) => {
+            // With Remix, since we might have ongoing submissions in the
+            // TodoItem component, we cannot unmount it. What we do instead
+            // is hide the item so it is not visible to the user
+
+            const isHidden = todo.isDeleted
+              ? true
+              : filter === 'active'
+              ? todo.completed
+              : filter === 'completed'
+              ? !todo.completed
+              : false
+
+            return <TodoItem key={todo.id} todo={todo} hidden={isHidden} />
+          })}
+          {todosBeingCreated.map((todoBeingCreated) => (
+            <TodoCreator
+              key={todoBeingCreated.operationId}
+              todo={todoBeingCreated}
+              hidden={filter === 'completed'}
+              onFinish={() =>
+                setTodosBeingCreated(
+                  todosBeingCreated.filter(
+                    (todo) => todo.operationId !== todoBeingCreated.operationId
+                  )
+                )
+              }
+            />
+          ))}
+          <div className="bottom-bar">
+            <span className="bottom-text">{`${activeCount} items left`}</span>
+
+            <TodoFilter
+              className="todo-filter"
+              filter={filter}
+              onFilterChange={setFilter}
+            />
+
+            <clearCompleted.Form method="delete">
+              <input type="hidden" name="_action" value="deleteDone" />
+              <button className="bottom-text clear-completed-btn" type="submit">
+                Clear Completed
+              </button>
+            </clearCompleted.Form>
           </div>
-        </main>
-      </div>
-    </DndProvider>
+        </div>
+      </main>
+    </div>
   )
 }
 
