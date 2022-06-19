@@ -33,38 +33,45 @@ export async function getUserTodos(userId: string) {
 }
 
 export async function updateTodo(todoId: string, todo: Partial<NewTodo>) {
-  return await prisma.todo.update({ where: { id: todoId }, data: todo })
+  return await prisma.todo.update({
+    where: { id: todoId },
+    data: todo,
+  })
 }
 
-export async function deleteTodo(todoId: string) {
-  const todo = await prisma.todo
-    .delete({ where: { id: todoId } })
-    .catch((error) => console.error(error))
+export async function deleteTodo(userId: string, todoId: string) {
+  const todo = await prisma.todo.findFirst({ where: { id: todoId, userId } })
 
   if (!todo) return
+
+  const transactions = []
+  transactions.push(prisma.todo.delete({ where: { id: todoId } }))
 
   // If the todo being deleted is the last todo of an user, we need to set the
   // previous todo as the new last todo
   const userLastTodo = await prisma.userLastTodo.findFirst({
     where: { todoId: todo.id },
   })
+
   if (userLastTodo) {
-    await prisma.userLastTodo.update({
-      where: { userId: userLastTodo.userId },
-      data: { todoId: todo.previous },
-    })
+    transactions.push(
+      prisma.userLastTodo.update({
+        where: { userId: userLastTodo.userId },
+        data: { todoId: todo.previous },
+      })
+    )
   }
 
   // Update the next todo, which holds the reference to
   // the todo being deleted
-  await prisma.todo
-    .updateMany({
+  transactions.push(
+    prisma.todo.updateMany({
       where: { previous: todoId },
       data: { previous: todo.previous },
     })
-    // If the todo being deleted is the last todo, this update will throw, so
-    // we silently catch it here
-    .catch((error) => console.error(error))
+  )
+
+  await prisma.$transaction(transactions)
 
   return todo
 }
@@ -76,8 +83,177 @@ export async function deleteDone(userId: string) {
 
   const deletedTodos = []
   for (let i = 0; i < todos.length; i++) {
-    deletedTodos.push(await deleteTodo(todos[i].id))
+    deletedTodos.push(await deleteTodo(userId, todos[i].id))
   }
 
   return deletedTodos
+}
+
+/**
+ * Moves a todo to a position in front of another todo
+ *
+ * @param userId The user associated with the todo being moved, it is for
+ * validation purposes
+ * @param todoId The id of the todo to be moved
+ * @param newNextTodoId The destination of the move will be in front of
+ * the todo with this id
+ *
+ * @returns The updated todo
+ */
+export async function moveTodoForward(
+  userId: string,
+  todoId: string,
+  newNextTodoId: string
+) {
+  const [todo, newNextTodo] = await prisma.$transaction([
+    prisma.todo.findFirst({ where: { id: todoId, userId } }),
+    prisma.todo.findFirst({ where: { id: newNextTodoId, userId } }),
+  ])
+
+  if (!todo || !newNextTodo) return
+
+  const transactions = []
+
+  // If the todo being moved is the last todo of an user, we need to set the
+  // previous todo as the new last todo
+  const userLastTodo = await prisma.userLastTodo
+    .findFirst({
+      where: { todoId },
+    })
+    // Silently catch if no record is found
+    .catch((error) => {
+      console.error(error)
+      return null
+    })
+
+  if (userLastTodo) {
+    transactions.push(
+      prisma.userLastTodo.update({
+        where: { userId: userLastTodo.userId },
+        data: { todoId: todo.previous },
+      })
+    )
+  } else {
+    // If it isn't the last we need to update the next todo to point to the
+    // previous of the previous todo
+    transactions.push(
+      prisma.todo.updateMany({
+        where: { previous: todoId },
+        data: { previous: todo.previous },
+      })
+    )
+  }
+
+  transactions.push(
+    prisma.todo.update({
+      where: { id: todoId },
+      data: { previous: newNextTodo.previous },
+    })
+  )
+
+  transactions.push(
+    prisma.todo.update({
+      where: { id: newNextTodo.id },
+      data: { previous: todoId },
+    })
+  )
+
+  try {
+    const results = await prisma.$transaction(transactions)
+    return results[1]
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+/**
+ * Moves a todo to a backwards position, after a specified todo
+ *
+ * @param userId The user associated with the todo being moved, it is for
+ * validation purposes
+ * @param todoId The id of the todo to be moved
+ * @param newPreviousTodoId The destination of the move will be after
+ * the todo with this id
+ *
+ * @returns The updated todo
+ */
+export async function moveTodoBackwards(
+  userId: string,
+  todoId: string,
+  newPreviousTodoId: string
+) {
+  const [todo, newPreviousTodo] = await prisma.$transaction([
+    prisma.todo.findFirst({ where: { id: todoId, userId } }),
+    prisma.todo.findFirst({ where: { id: newPreviousTodoId, userId } }),
+  ])
+
+  if (!todo || !newPreviousTodo) return
+
+  const transactions = []
+
+  // Check if the todo is being moved to the last position
+  const userLastTodo = await prisma.userLastTodo
+    .findFirst({
+      where: { userId, todoId: newPreviousTodoId },
+    })
+    .catch((error) => {
+      console.error(error)
+      return null
+    })
+
+  // If it is being moved to the last position
+  if (userLastTodo) {
+    transactions.push(
+      prisma.userLastTodo.update({
+        where: { userId: userLastTodo.userId },
+        data: { todoId },
+      })
+    )
+  }
+
+  transactions.push(
+    prisma.todo.updateMany({
+      where: {
+        previous: todoId,
+      },
+      data: {
+        previous: todo.previous,
+      },
+    })
+  )
+
+  if (!userLastTodo) {
+    // We need to move our todo in-between the newPreviousTodo and
+    // it's next todo. Here we make the later point to our todo
+    transactions.push(
+      prisma.todo.updateMany({
+        where: {
+          previous: newPreviousTodoId,
+        },
+        data: {
+          previous: todoId,
+        },
+      })
+    )
+  }
+
+  transactions.push(
+    prisma.todo.update({
+      where: {
+        id: todoId,
+      },
+      data: {
+        previous: newPreviousTodoId,
+      },
+    })
+  )
+
+  try {
+    const results = await prisma.$transaction(transactions)
+    return results[2]
+  } catch (error) {
+    console.error(error)
+    return null
+  }
 }

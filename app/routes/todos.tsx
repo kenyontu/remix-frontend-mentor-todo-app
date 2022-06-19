@@ -4,6 +4,7 @@ import { useLoaderData, useFetcher, useFetchers } from '@remix-run/react'
 import { nanoid } from 'nanoid'
 import cx from 'classnames'
 import { useDebouncedCallback } from 'use-debounce'
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import type {
   LoaderFunction,
   ActionFunction,
@@ -19,6 +20,8 @@ import {
   deleteTodo,
   updateTodo,
   deleteDone,
+  moveTodoForward,
+  moveTodoBackwards,
 } from '~/models/todo.server'
 import type { NewTodo } from '~/models/todo.server'
 
@@ -63,7 +66,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json(response)
 }
 
-type Action =
+type SubmitAction =
   | {
       _action: 'postTodo'
       text: string
@@ -86,9 +89,14 @@ type Action =
       _action: 'deleteDone'
     }
   | {
-      _action: 'changeTodoOrder'
+      _action: 'patchMoveTodoForward'
       id: string
-      previousId: string
+      moveToTodoId: string
+    }
+  | {
+      _action: 'patchMoveTodoBackwards'
+      id: string
+      moveToTodoId: string
     }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -96,7 +104,7 @@ export const action: ActionFunction = async ({ request }) => {
   if (!user) return redirect('/')
 
   const formData = await request.formData()
-  const action = Object.fromEntries(formData.entries()) as Action
+  const action = Object.fromEntries(formData.entries()) as SubmitAction
 
   switch (action._action) {
     case 'postTodo':
@@ -118,20 +126,28 @@ export const action: ActionFunction = async ({ request }) => {
       })
 
     case 'deleteTodo':
-      return await deleteTodo(action.id)
+      return await deleteTodo(user.id, action.id)
 
     case 'deleteDone':
       return await deleteDone(user.id)
+
+    case 'patchMoveTodoForward':
+      return await moveTodoForward(user.id, action.id, action.moveToTodoId)
+
+    case 'patchMoveTodoBackwards':
+      return await moveTodoBackwards(user.id, action.id, action.moveToTodoId)
   }
 }
 
 export default function TodosPage() {
   const { todos, lastTodoId } = useLoaderData<LoaderData>()
   const [filter, setFilter] = useState<Filter>('all')
+
   const [todosBeingCreated, setTodosBeingCreated] = useState<
     TodoBeingCreated[]
   >([])
   const clearCompleted = useFetcher()
+  const changeTodoOrder = useFetcher()
 
   const orderedTodos = useOrderedTodos(todos, lastTodoId)
   const optimisticTodos = useOptimisticTodos(orderedTodos)
@@ -185,7 +201,7 @@ export default function TodosPage() {
             event.currentTarget.reset()
           }}
         >
-          <label className="todo">
+          <label className="add-todo">
             <span className="check" />
             <input
               className="todo-description"
@@ -195,58 +211,104 @@ export default function TodosPage() {
             />
           </label>
         </form>
-        <div className="todo-list">
-          {showNoTodoMessage && (
-            <div className="bottom-divider no-todos">
-              <p>No todos</p>
-            </div>
-          )}
-          {orderedTodos.map((todo) => {
-            // With Remix, since we might have ongoing submissions in the
-            // TodoItem component, we cannot unmount it. What we do instead
-            // is hide the item so it is not visible to the user
 
-            const isHidden = todo.isDeleted
-              ? true
-              : filter === 'active'
-              ? todo.completed
-              : filter === 'completed'
-              ? !todo.completed
-              : false
+        <DragDropContext
+          onDragEnd={(result) => {
+            if (!result.destination) {
+              return
+            }
 
-            return <TodoItem key={todo.id} todo={todo} hidden={isHidden} />
-          })}
-          {todosBeingCreated.map((todoBeingCreated) => (
-            <TodoCreator
-              key={todoBeingCreated.operationId}
-              todo={todoBeingCreated}
-              hidden={filter === 'completed'}
-              onFinish={() =>
-                setTodosBeingCreated(
-                  todosBeingCreated.filter(
-                    (todo) => todo.operationId !== todoBeingCreated.operationId
+            if (result.source.index === result.destination.index) {
+              return
+            }
+
+            const actionName =
+              result.destination.index > result.source.index
+                ? 'patchMoveTodoBackwards'
+                : 'patchMoveTodoForward'
+
+            const action: SubmitAction = {
+              _action: actionName,
+              id: orderedTodos[result.source.index].id,
+              moveToTodoId: orderedTodos[result.destination.index].id,
+            }
+
+            changeTodoOrder.submit(action, { method: 'patch', replace: true })
+          }}
+        >
+          <Droppable droppableId="todos">
+            {(provided) => (
+              <div
+                className="todo-list"
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+              >
+                {showNoTodoMessage && (
+                  <div className="bottom-divider no-todos">
+                    <p>No todos</p>
+                  </div>
+                )}
+                {optimisticTodos.map((todo, index) => {
+                  // With Remix, since we might have ongoing submissions in the
+                  // TodoItem component, we cannot unmount it. What we do instead
+                  // is hide the item so it is not visible to the user
+
+                  const isHidden = todo.isDeleted
+                    ? true
+                    : filter === 'active'
+                    ? todo.completed
+                    : filter === 'completed'
+                    ? !todo.completed
+                    : false
+
+                  return (
+                    <TodoItem
+                      key={todo.id}
+                      todo={todo}
+                      hidden={isHidden}
+                      index={index}
+                    />
                   )
-                )
-              }
-            />
-          ))}
-          <div className="bottom-bar">
-            <span className="bottom-text">{`${activeCount} items left`}</span>
+                })}
+                {provided.placeholder}
+                {todosBeingCreated.map((todoBeingCreated) => (
+                  <TodoCreator
+                    key={todoBeingCreated.operationId}
+                    todo={todoBeingCreated}
+                    hidden={filter === 'completed'}
+                    onFinish={() =>
+                      setTodosBeingCreated(
+                        todosBeingCreated.filter(
+                          (todo) =>
+                            todo.operationId !== todoBeingCreated.operationId
+                        )
+                      )
+                    }
+                  />
+                ))}
+                <div className="bottom-bar">
+                  <span className="bottom-text">{`${activeCount} items left`}</span>
 
-            <TodoFilter
-              className="todo-filter"
-              filter={filter}
-              onFilterChange={setFilter}
-            />
+                  <TodoFilter
+                    className="todo-filter"
+                    filter={filter}
+                    onFilterChange={setFilter}
+                  />
 
-            <clearCompleted.Form method="delete">
-              <input type="hidden" name="_action" value="deleteDone" />
-              <button className="bottom-text clear-completed-btn" type="submit">
-                Clear Completed
-              </button>
-            </clearCompleted.Form>
-          </div>
-        </div>
+                  <clearCompleted.Form method="delete">
+                    <input type="hidden" name="_action" value="deleteDone" />
+                    <button
+                      className="bottom-text clear-completed-btn"
+                      type="submit"
+                    >
+                      Clear Completed
+                    </button>
+                  </clearCompleted.Form>
+                </div>
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </main>
     </div>
   )
@@ -297,6 +359,7 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
     <TodoItem
       optimistic
       hidden={hidden}
+      index={0}
       todo={{
         id: '',
         previous: null,
@@ -313,9 +376,15 @@ type TodoItemProps = {
   todo: Todo
   optimistic?: boolean
   hidden?: boolean
+  index: number
 }
 
-function TodoItem({ todo, optimistic = false, hidden = false }: TodoItemProps) {
+function TodoItem({
+  todo,
+  optimistic = false,
+  hidden = false,
+  index,
+}: TodoItemProps) {
   const toggleFetcher = useFetcher()
   const descriptionFetcher = useFetcher()
   const deleteFetcher = useFetcher()
@@ -348,50 +417,74 @@ function TodoItem({ todo, optimistic = false, hidden = false }: TodoItemProps) {
   const isDeleting = deleteFetcher.submission?.formData.get('id') === todo.id
 
   return (
-    <div
-      className={cx('todo bottom-divider', { hidden: isDeleting || hidden })}
+    <Draggable
+      draggableId={todo.id}
+      index={index}
+      isDragDisabled={optimistic || hidden}
     >
-      <toggleFetcher.Form className="check-form" method="patch" replace>
-        <input type="hidden" name="_action" value="patchDone" />
-        <input type="hidden" name="id" value={todo.id} />
-        <input
-          disabled={optimistic}
-          type="checkbox"
-          id={doneCheckboxId}
-          name="completed"
-          checked={isCompleted}
-          onChange={(event) => toggleFetcher.submit(event.target.form)}
-        />
-        <label className="check" htmlFor={doneCheckboxId}></label>
-      </toggleFetcher.Form>
-
-      <descriptionFetcher.Form className="description-form">
-        <input
-          disabled={optimistic}
-          className={cx('todo-description', {
-            completed: isCompleted,
+      {(provided) => (
+        <div
+          className={cx('todo bottom-divider', {
+            hidden: isDeleting || hidden,
           })}
-          type="text"
-          name="text"
-          defaultValue={todo.text}
-          onChange={debouncedOnDescriptionChange}
-        />
-      </descriptionFetcher.Form>
-
-      <deleteFetcher.Form method="delete">
-        <input type="hidden" name="id" defaultValue={todo.id} />
-        <button
-          disabled={isDeleting || optimistic}
-          className="todo-delete-btn"
-          type="submit"
-          name="_action"
-          value="deleteTodo"
-          aria-label="Delete todo"
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
         >
-          <img src="/images/icon-cross.svg" alt="Delete" />
-        </button>
-      </deleteFetcher.Form>
-    </div>
+          <toggleFetcher.Form
+            className="check-form"
+            method="patch"
+            replace
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <input type="hidden" name="_action" value="patchDone" />
+            <input type="hidden" name="id" value={todo.id} />
+            <input
+              disabled={optimistic}
+              type="checkbox"
+              id={doneCheckboxId}
+              name="completed"
+              checked={isCompleted}
+              onChange={(event) => toggleFetcher.submit(event.target.form)}
+            />
+            <label className="check" htmlFor={doneCheckboxId}></label>
+          </toggleFetcher.Form>
+
+          <descriptionFetcher.Form
+            className="description-form"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <input
+              disabled={optimistic}
+              className={cx('todo-description', {
+                completed: isCompleted,
+              })}
+              type="text"
+              name="text"
+              defaultValue={todo.text}
+              onChange={debouncedOnDescriptionChange}
+            />
+          </descriptionFetcher.Form>
+
+          <deleteFetcher.Form
+            method="delete"
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <input type="hidden" name="id" defaultValue={todo.id} />
+            <button
+              disabled={isDeleting || optimistic}
+              className="todo-delete-btn"
+              type="submit"
+              name="_action"
+              value="deleteTodo"
+              aria-label="Delete todo"
+            >
+              <img src="/images/icon-cross.svg" alt="Delete" />
+            </button>
+          </deleteFetcher.Form>
+        </div>
+      )}
+    </Draggable>
   )
 }
 
@@ -453,6 +546,7 @@ type OptimisticTodo = Todo & {
 function useOptimisticTodos(todos: Todo[]) {
   const fetchers = useFetchers()
 
+  let order = todos.map((todo) => todo.id)
   const map: Map<string, OptimisticTodo> = new Map()
 
   todos.forEach((todo) => {
@@ -464,7 +558,7 @@ function useOptimisticTodos(todos: Todo[]) {
 
     const action = Object.fromEntries(
       fetcher.submission.formData.entries()
-    ) as Action
+    ) as SubmitAction
 
     switch (action._action) {
       case 'deleteTodo':
@@ -491,10 +585,25 @@ function useOptimisticTodos(todos: Todo[]) {
             map.set(key, { ...value, isDeleted: true, isOptimistic: true })
         })
         break
+
+      case 'patchMoveTodoForward':
+      case 'patchMoveTodoBackwards':
+        const oldIndex = order.indexOf(action.id)
+        const newIndex = todos.findIndex(
+          (todo) => todo.id === action.moveToTodoId
+        )
+        order.splice(oldIndex, 1)
+        order.splice(newIndex, 0, action.id)
+
+        map.set(action.id, {
+          ...(map.get(action.id) as OptimisticTodo),
+          isOptimistic: true,
+        })
+        break
     }
   })
 
-  return Array.from(map.values())
+  return order.map((todoId) => map.get(todoId)) as OptimisticTodo[]
 }
 
 function useTodoCounters(todos: OptimisticTodo[]) {
