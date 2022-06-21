@@ -436,10 +436,11 @@ function TodoItem({
       index={index}
       isDragDisabled={dragDisabled || optimistic || hidden}
     >
-      {(provided) => (
+      {(provided, snapshot) => (
         <div
           className={cx('todo bottom-divider', {
             hidden: isDeleting || hidden,
+            dragging: snapshot.isDragging,
           })}
           ref={provided.innerRef}
           {...provided.draggableProps}

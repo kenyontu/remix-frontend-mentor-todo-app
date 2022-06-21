@@ -58,6 +58,11 @@
   cursor: grab;
 }
 
+.todo.dragging {
+  border-radius: var(--radius-todo);
+  border: 2px solid var(--clr-todo-divider);
+}
+
 .todo:first-of-type {
   border-top-left-radius: var(--radius-todo);
   border-top-right-radius: var(--radius-todo);
