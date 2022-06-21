@@ -18,9 +18,11 @@ export async function createTodo(userId: string, text: string) {
 
     const newTodo = await prisma.todo.create({
       data: {
-        userId,
         text,
         previous: userLastTodo!.todoId,
+        user: {
+          connect: { id: userId },
+        },
       },
     })
 
