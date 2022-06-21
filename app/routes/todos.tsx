@@ -617,15 +617,21 @@ function useOptimisticTodos(todos: Todo[]) {
 
 function useTodoCounters(todos: OptimisticTodo[]) {
   let activeCount = 0
+  let completedCount = 0
 
   for (let i = 0; i < todos.length; i++) {
-    if (todos[i].isDeleted || todos[i].completed) continue
+    if (todos[i].isDeleted) continue
+
+    if (todos[i].completed) {
+      completedCount++
+      continue
+    }
 
     activeCount++
   }
 
   return {
     activeCount,
-    completedCount: todos.length - activeCount,
+    completedCount,
   }
 }
