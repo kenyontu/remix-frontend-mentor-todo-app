@@ -30,6 +30,7 @@ import { Header, links as headerLinks } from '~/components/layout/header'
 import { TodoFilter, links as todoFilterLinks } from '~/components/todo-filter'
 import type { Filter } from '~/components/todo-filter'
 import { getUserLastTodoByUserId } from '~/models/user-last-todo.server'
+import { ActiveTodoCounter } from '~/components/active-todo-counter'
 
 export const meta: MetaFunction = () => ({
   title: 'Todos',
@@ -287,7 +288,10 @@ export default function TodosPage() {
                   />
                 ))}
                 <div className="bottom-bar">
-                  <span className="bottom-text">{`${activeCount} items left`}</span>
+                  <ActiveTodoCounter
+                    className="bottom-text"
+                    count={activeCount}
+                  />
 
                   <TodoFilter
                     className="todo-filter"
