@@ -108,10 +108,10 @@ export const action: ActionFunction = async ({ request }) => {
 
   switch (action._action) {
     case 'postTodo':
-      const todo: NewTodo = {
-        userId: user.id,
-        text: action.text,
-        completed: formData.has('completed'),
+      if (action.text.length === 0) {
+        return json({
+          error: { message: 'The "text" parameter cannot be empty' },
+        })
       }
       return await createTodo(user.id, action.text)
 
@@ -191,12 +191,18 @@ export default function TodosPage() {
             // And this is why we don't make the actual submission in
             // here.
             const formData = new FormData(event.currentTarget)
+            const todoText = formData.get('text')
+
+            // Do now allow creation of a todo without text
+            if (typeof todoText !== 'string' || todoText.length === 0) {
+              return
+            }
 
             setTodosBeingCreated((todosBeingCreated) => [
               ...todosBeingCreated,
               {
                 operationId: nanoid(),
-                todoText: formData.get('text') as string,
+                todoText,
               },
             ])
 
