@@ -161,6 +161,8 @@ export default function TodosPage() {
       ? completedCount === 0
       : activeCount + completedCount === 0 && todosBeingCreated.length === 0
 
+  const isDragDisabled = todosBeingCreated.length > 0
+
   return (
     <div className="container">
       <div className="background-image" />
@@ -266,6 +268,7 @@ export default function TodosPage() {
                     <TodoItem
                       key={todo.id}
                       todo={todo}
+                      dragDisabled={isDragDisabled}
                       hidden={isHidden}
                       index={index}
                     />
@@ -365,7 +368,7 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
       hidden={hidden}
       index={0}
       todo={{
-        id: '',
+        id: todo.operationId,
         previous: null,
         userId: '',
         createdAt: new Date(Date.now()),
@@ -380,6 +383,7 @@ type TodoItemProps = {
   todo: Todo
   optimistic?: boolean
   hidden?: boolean
+  dragDisabled?: boolean
   index: number
 }
 
@@ -387,6 +391,7 @@ function TodoItem({
   todo,
   optimistic = false,
   hidden = false,
+  dragDisabled = false,
   index,
 }: TodoItemProps) {
   const toggleFetcher = useFetcher()
@@ -424,7 +429,7 @@ function TodoItem({
     <Draggable
       draggableId={todo.id}
       index={index}
-      isDragDisabled={optimistic || hidden}
+      isDragDisabled={dragDisabled || optimistic || hidden}
     >
       {(provided) => (
         <div
