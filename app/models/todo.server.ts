@@ -1,25 +1,38 @@
 import type { Todo } from '@prisma/client'
 
 import { prisma } from '~/db.server'
-import {
-  createOrUpdateLastTodo,
-  getUserLastTodoByUserId,
-} from './user-last-todo.server'
 
 export type { Todo } from '@prisma/client'
 
-export type NewTodo = Omit<Todo, 'id' | 'createdAt' | 'previous'>
+export async function createTodo(userId: string, text: string) {
+  // To avoid getting into a inconsistent state due to multiple concurrent
+  // operations, we use a Interactive Transaction, which receives a function
+  // and every operation called within this function is run in a single
+  // transaction.
+  //
+  // You can read about them here: https://www.prisma.io/docs/concepts/components/prisma-client/transactions#interactive-transactions-in-preview
+  return await prisma.$transaction(async (prisma) => {
+    const userLastTodo = await prisma.userLastTodo.findUnique({
+      where: { userId },
+    })
 
-export async function createTodo(userId: string, todo: NewTodo) {
-  const userLastTodo = await getUserLastTodoByUserId(userId)
+    const newTodo = await prisma.todo.create({
+      data: {
+        userId,
+        text,
+        previous: userLastTodo!.todoId,
+      },
+    })
 
-  const newTodo = await prisma.todo.create({
-    data: { ...todo, previous: userLastTodo?.todoId ?? null },
+    await prisma.userLastTodo.update({
+      where: { userId },
+      data: {
+        todoId: newTodo.id,
+      },
+    })
+
+    return newTodo
   })
-
-  await createOrUpdateLastTodo(userId, newTodo.id)
-
-  return newTodo
 }
 
 export async function getUserTodos(userId: string) {
@@ -32,7 +45,10 @@ export async function getUserTodos(userId: string) {
   return todos
 }
 
-export async function updateTodo(todoId: string, todo: Partial<NewTodo>) {
+export async function updateTodo(
+  todoId: string,
+  todo: Partial<Omit<Todo, 'id' | 'createdAt' | 'previous'>>
+) {
   return await prisma.todo.update({
     where: { id: todoId },
     data: todo,

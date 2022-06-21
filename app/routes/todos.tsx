@@ -23,7 +23,6 @@ import {
   moveTodoForward,
   moveTodoBackwards,
 } from '~/models/todo.server'
-import type { NewTodo } from '~/models/todo.server'
 
 import styles from '~/styles/todos.css'
 import { Header, links as headerLinks } from '~/components/layout/header'
@@ -114,7 +113,7 @@ export const action: ActionFunction = async ({ request }) => {
         text: action.text,
         completed: formData.has('completed'),
       }
-      return await createTodo(user.id, todo)
+      return await createTodo(user.id, action.text)
 
     case 'patchDone':
       return await updateTodo(action.id, {

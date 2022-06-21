@@ -1,11 +1,16 @@
 import type { User } from '@prisma/client'
-import { prisma } from '~/db.server'
 
-export type { User } from '@prisma/client'
+import { prisma } from '~/db.server'
 
 export async function createUser() {
   const newUser = await prisma.user.create({
-    data: {},
+    data: {
+      lastTodo: {
+        create: {
+          todoId: null,
+        },
+      },
+    },
   })
 
   return { id: newUser.id }

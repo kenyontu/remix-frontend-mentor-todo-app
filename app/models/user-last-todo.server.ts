@@ -2,10 +2,9 @@ import { prisma } from '~/db.server'
 
 export type { UserLastTodo } from '@prisma/client'
 
-export async function createOrUpdateLastTodo(userId: string, todoId: string) {
-  return await prisma.userLastTodo.upsert({
-    create: { userId, todoId },
-    update: { todoId },
+export async function updateUserLastTodo(userId: string, todoId: string) {
+  return await prisma.userLastTodo.update({
+    data: { todoId },
     where: { userId },
   })
 }
