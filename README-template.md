@@ -76,6 +76,7 @@ This was one of the major issues I found, it becomes a more complex task when yo
 
 ### Useful resources
 
-- [Remix's Documentation page](https://remix.run/docs/en/v1) - Most of my learning on Remix was by reading the documentation
-- [Remix's GitHub repo](https://github.com/remix-run/remix) - The source code, multiple examples, discussions and issues were a great source of information
-- [Remix's Youtube channel](https://www.youtube.com/c/Remix-Run) - The "Remix Single" series by Ryan Florence is a must watch for anyone trying to learn Remix
+- [Remix's Documentation page](https://remix.run/docs/en/v1) - Most of my learning on Remix was by reading the documentation.
+- [Remix's GitHub repo](https://github.com/remix-run/remix) - The source code, multiple examples, discussions and issues were a great source of information.
+- [Remix's Youtube channel](https://www.youtube.com/c/Remix-Run) - The "Remix Single" series by Ryan Florence is a must watch for anyone trying to learn Remix.
+- [Prisma's Documentation](https://www.prisma.io/docs/) - From learning to build a scheme to making nested writes and transactions, the Prisma's documentation was a good source of learning material.
