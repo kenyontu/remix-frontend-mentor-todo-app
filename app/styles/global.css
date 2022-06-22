@@ -110,11 +110,12 @@ html.dark {
   /* Bottom Bar */
   --clr-bottom-bar-bg: var(--clr-dark-blue-800);
   --clr-bottom-bar-text: var(--clr-grayish-blue-700);
-  --clr-bottom-bar-text-hover: var(--clr-grayish-blue-600);
+  --clr-bottom-bar-text-hover: var(--clr-grayish-blue-300);
 
   /* Todo filter */
   --clr-todo-filter-bg: var(--clr-dark-blue-800);
   --clr-todo-filter-inactive: var(--clr-grayish-blue-700);
+  --clr-todo-filter-inactive-hover: var(--clr-grayish-blue-300);
   --clr-todo-filter-active: var(--clr-blue-200);
 
   /* Drag and drop message */
