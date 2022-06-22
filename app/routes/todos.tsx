@@ -109,9 +109,12 @@ export const action: ActionFunction = async ({ request }) => {
   switch (action._action) {
     case 'postTodo':
       if (action.text.length === 0) {
-        return json({
-          error: { message: 'The "text" parameter cannot be empty' },
-        })
+        return json(
+          {
+            error: { message: 'The "text" parameter cannot be empty' },
+          },
+          { status: 400 }
+        )
       }
       return await createTodo(user.id, action.text)
 
