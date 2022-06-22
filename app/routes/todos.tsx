@@ -327,6 +327,7 @@ export default function TodosPage() {
             )}
           </Droppable>
         </DragDropContext>
+        <p className="drag-drop-msg">Drag and drop to reorder list</p>
       </main>
     </div>
   )

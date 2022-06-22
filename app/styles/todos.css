@@ -259,6 +259,13 @@ button.bottom-text:focus {
   border-radius: var(--radius-todo);
 }
 
+.drag-drop-msg {
+  text-align: center;
+  margin-top: 6.9rem;
+  font-size: 0.85rem;
+  color: var(--clr-drag-drop-msg);
+}
+
 @media only screen and (min-width: 420px) {
   main {
     max-width: var(--sz-content-max-width);
@@ -333,5 +340,9 @@ button.bottom-text:focus {
     background: none;
     border-radius: none;
     transform: translateX(-50%);
+  }
+
+  .drag-drop-msg {
+    margin-top: 3.3rem;
   }
 }

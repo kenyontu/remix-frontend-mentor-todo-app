@@ -84,6 +84,9 @@ html {
   --clr-todo-filter-inactive: var(--clr-grayish-blue-400);
   --clr-todo-filter-inactive-hover: var(--clr-grayish-blue-600);
   --clr-todo-filter-active: var(--clr-blue-200);
+
+  /* Drag and drop message */
+  --clr-drag-drop-msg: var(--clr-grayish-blue-600);
 }
 
 /* Dark mode colors */
@@ -112,6 +115,9 @@ html.dark {
   --clr-todo-filter-bg: var(--clr-dark-blue-800);
   --clr-todo-filter-inactive: var(--clr-grayish-blue-700);
   --clr-todo-filter-active: var(--clr-blue-200);
+
+  /* Drag and drop message */
+  --clr-drag-drop-msg: var(--clr-grayish-blue-700);
 }
 
 *,
