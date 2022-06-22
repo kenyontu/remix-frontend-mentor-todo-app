@@ -11,10 +11,10 @@ type Props = {
 function ActiveTodoCounter({ count, ...props }: Props) {
   const message =
     count === 0
-      ? 'No todo left'
+      ? 'No items left'
       : count === 1
-      ? '1 todo left'
-      : `${count} todos left`
+      ? '1 item left'
+      : `${count} items left`
 
   return <span {...props}>{message}</span>
 }
