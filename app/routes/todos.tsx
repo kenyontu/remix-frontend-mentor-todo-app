@@ -622,6 +622,8 @@ function useOptimisticTodos(todos: Todo[]) {
 }
 
 function useTodoCounters(todos: OptimisticTodo[]) {
+  const fetchers = useFetchers()
+
   let activeCount = 0
   let completedCount = 0
 
@@ -634,6 +636,13 @@ function useTodoCounters(todos: OptimisticTodo[]) {
     }
 
     activeCount++
+  }
+
+  // Also take into account the todos being created
+  for (let i = 0; i < fetchers.length; i++) {
+    if (fetchers[i].submission?.formData.get('_action') === 'postTodo') {
+      activeCount++
+    }
   }
 
   return {
