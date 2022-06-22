@@ -4,6 +4,11 @@ This is a solution to the [Todo app challenge on Frontend Mentor](https://www.fr
 
 ## Table of contents
 
+- [Setup](#setup)
+  - [Environment variables](#environment-variables)
+  - [Netlify Setup](#netlify-setup)
+  - [Development](#development)
+  - [Deployment](#deployment)
 - [Overview](#overview)
   - [The challenge](#the-challenge)
   - [Screenshot](#screenshot)
@@ -13,6 +18,66 @@ This is a solution to the [Todo app challenge on Frontend Mentor](https://www.fr
   - [What I learned](#what-i-learned)
   - [Continued development](#continued-development)
 - [Useful resources](#useful-resources)
+
+## Setup
+
+### Environment variables
+
+Create a file called `.env` with the following content and replacing with your own environment.
+
+```
+DATABASE_URL="[Replace with MongoDB connection string]"
+SESSION_SECRET="[Replace with password used to encrypt the session cookie]"
+```
+
+### Netlify Setup
+
+1. Install the [Netlify CLI](https://www.netlify.com/products/dev/):
+
+```sh
+npm i -g netlify-cli
+```
+
+If you have previously installed the Netlify CLI, you should update it to the latest version:
+
+```sh
+npm i -g netlify-cli@latest
+```
+
+2. Sign up and log in to Netlify:
+
+```sh
+netlify login
+```
+
+3. Create a new site:
+
+```sh
+netlify init
+```
+
+### Development
+
+The Netlify CLI starts your app in development mode, rebuilding assets on file changes.
+
+```sh
+npm run dev
+```
+
+Open up [http://localhost:3000](http://localhost:3000), and you should be ready to go!
+
+### Deployment
+
+There are two ways to deploy your app to Netlify, you can either link your app to your git repo and have it auto deploy changes to Netlify, or you can deploy your app manually. If you've followed the setup instructions already, all you need to do is run this:
+
+```sh
+npm run build
+# preview deployment
+netlify deploy
+
+# production deployment
+netlify deploy --prod
+```
 
 ## Overview
 
