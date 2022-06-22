@@ -373,10 +373,16 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
     }
   }, [create, todo, onFinish])
 
+  // On Firefox there is a less than one second window where both this
+  // component and the actual todo that was created, are displayed at the
+  // same time, causing a flicker. To avoid this,we also hide this todo
+  // when the create request is done
+  const isHidden = hidden || create.type === 'done'
+
   return (
     <TodoItem
       optimistic
-      hidden={hidden}
+      hidden={isHidden}
       index={0}
       todo={{
         id: todo.operationId,
