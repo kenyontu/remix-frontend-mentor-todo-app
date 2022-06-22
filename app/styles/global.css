@@ -24,6 +24,8 @@
   --clr-gradient-check-blue: hsl(192, 100%, 67%);
   --clr-gradient-check-pink: hsl(280, 87%, 65%);
 
+  --clr-shadow: hsla(235, 19%, 35%, 0.07);
+
   /* Font families */
 
   --ff-josefin-sans: 'Josefin Sans', sans-serif;
@@ -69,6 +71,7 @@ html {
   --clr-todo-description-completed: var(--clr-grayish-blue-400);
   --clr-todo-delete-btn-outline: var(--clr-dark-blue-800);
   --clr-todo-divider: var(--clr-gray-300);
+  --clr-todo-shadow: var(--clr-shadow);
   --clr-no-todos-msg: var(--clr-grayish-blue-400);
 
   /* Bottom Bar */
@@ -97,6 +100,7 @@ html.dark {
   --clr-todo-description-completed: var(--clr-grayish-blue-700);
   --clr-todo-delete-btn-outline: var(--clr-grayish-blue-700);
   --clr-todo-divider: var(--clr-grayish-blue-900);
+  --clr-todo-shadow: var(--clr-shadow);
   --clr-no-todos-msg: var(--clr-grayish-blue-700);
 
   /* Bottom Bar */
