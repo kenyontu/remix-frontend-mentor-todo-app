@@ -24,7 +24,8 @@
   --clr-gradient-check-blue: hsl(192, 100%, 67%);
   --clr-gradient-check-pink: hsl(280, 87%, 65%);
 
-  --clr-shadow: hsla(235, 19%, 35%, 0.07);
+  --clr-shadow: hsla(236, 18%, 61%, 0.15);
+  --clr-shadow-dark: hsla(235, 17%, 0%, 0.15);
 
   /* Font families */
 
@@ -81,8 +82,8 @@ html {
 
   /* Todo filter */
   --clr-todo-filter-bg: var(--clr-white);
-  --clr-todo-filter-inactive: var(--clr-grayish-blue-400);
-  --clr-todo-filter-inactive-hover: var(--clr-grayish-blue-600);
+  --clr-todo-filter-inactive: var(--clr-grayish-blue-600);
+  --clr-todo-filter-inactive-hover: var(--clr-grayish-blue-900);
   --clr-todo-filter-active: var(--clr-blue-200);
 
   /* Drag and drop message */
@@ -103,7 +104,7 @@ html.dark {
   --clr-todo-description-completed: var(--clr-grayish-blue-700);
   --clr-todo-delete-btn-outline: var(--clr-grayish-blue-700);
   --clr-todo-divider: var(--clr-grayish-blue-900);
-  --clr-todo-shadow: var(--clr-shadow);
+  --clr-todo-shadow: var(--clr-shadow-dark);
   --clr-no-todos-msg: var(--clr-grayish-blue-700);
 
   /* Bottom Bar */
