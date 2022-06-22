@@ -457,6 +457,7 @@ function TodoItem({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          aria-label="Change todo order"
         >
           <toggleFetcher.Form
             className="check-form"
@@ -473,6 +474,7 @@ function TodoItem({
               name="completed"
               checked={isCompleted}
               onChange={(event) => toggleFetcher.submit(event.target.form)}
+              aria-label="Toggle complete"
             />
             <label className="check" htmlFor={doneCheckboxId}></label>
           </toggleFetcher.Form>
@@ -490,6 +492,7 @@ function TodoItem({
               name="text"
               defaultValue={todo.text}
               onChange={debouncedOnDescriptionChange}
+              aria-label="Todo text"
             />
           </descriptionFetcher.Form>
 
