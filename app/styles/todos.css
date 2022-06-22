@@ -53,9 +53,12 @@
   align-items: center;
   padding: 1rem 1.25rem 1rem;
   background-color: var(--clr-todo-bg);
-  border-top-left-radius: var(--radius-todo);
-  border-top-right-radius: var(--radius-todo);
   cursor: grab;
+}
+
+.todo:focus {
+  z-index: 10;
+  outline: 2px solid var(--clr-todo-divider);
 }
 
 .todo.dragging {
