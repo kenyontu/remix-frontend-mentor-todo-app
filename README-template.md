@@ -31,9 +31,19 @@ Users should be able to:
 - **Bonus**: Drag and drop to reorder items on the list
 - **Bonus**: Build this project as a full-stack application
 
-### Screenshot
+### Screenshots
 
-![](./screenshot.jpg)
+#### Light theme
+
+| Mobile layout                                                                                   | Desktop layout                                                                                    |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| <a href="./screenshots/mobile-light.png"><img src="./screenshots/mobile-light-thumb.png" /></a> | <a href="./screenshots/desktop-light.png"><img src="./screenshots/desktop-light-thumb.png" /></a> |
+
+#### Dark theme
+
+| Mobile layout                                                                                 | Desktop layout                                                                                  |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| <a href="./screenshots/mobile-dark.png"><img src="./screenshots/mobile-dark-thumb.png" /></a> | <a href="./screenshots/desktop-dark.png"><img src="./screenshots/desktop-dark-thumb.png" /></a> |
 
 ### Links
 
