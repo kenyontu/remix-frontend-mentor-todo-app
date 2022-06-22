@@ -139,6 +139,9 @@ export const action: ActionFunction = async ({ request }) => {
 
     case 'patchMoveTodoBackwards':
       return await moveTodoBackwards(user.id, action.id, action.moveToTodoId)
+
+    default:
+      return {}
   }
 }
 
