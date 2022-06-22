@@ -66,7 +66,7 @@ Users should be able to:
 
 ### What I learned
 
-This was my first time building an app with Remix and I feel like I got a good understanding of the fundamentals now.
+To build this app, I used two technologies I had no prior experience with, Remix and Prisma. Having completed it, I feel like I got a good understanding of their fundamentals.
 
 In this section I will comment on some challenges I've encountered while building this app.
 
