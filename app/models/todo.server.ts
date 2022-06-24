@@ -60,7 +60,7 @@ export async function updateTodo(
 export async function deleteTodo(userId: string, todoId: string) {
   const todo = await prisma.todo.findFirst({ where: { id: todoId, userId } })
 
-  if (!todo) return
+  if (!todo) return null
 
   const transactions = []
   transactions.push(prisma.todo.delete({ where: { id: todoId } }))
@@ -133,7 +133,7 @@ export async function moveTodoForward(
     prisma.todo.findFirst({ where: { id: newNextTodoId, userId } }),
   ])
 
-  if (!todo || !newNextTodo) return
+  if (!todo || !newNextTodo) return null
 
   const transactions = []
 
@@ -211,7 +211,7 @@ export async function moveTodoBackwards(
     prisma.todo.findFirst({ where: { id: newPreviousTodoId, userId } }),
   ])
 
-  if (!todo || !newPreviousTodo) return
+  if (!todo || !newPreviousTodo) return null
 
   const transactions = []
 
