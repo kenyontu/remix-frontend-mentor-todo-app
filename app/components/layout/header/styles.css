@@ -12,6 +12,28 @@
   letter-spacing: 11px;
 }
 
+.title.loading::after {
+  --sz-spinner: 0.6em;
+  content: '';
+  width: var(--sz-spinner);
+  height: var(--sz-spinner);
+  border: 2px solid var(--clr-header-spinner);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 1rem;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 @media only screen and (min-width: 420px) {
   .header {
     max-width: var(--sz-content-max-width);
