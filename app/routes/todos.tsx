@@ -106,42 +106,47 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData()
   const action = Object.fromEntries(formData.entries()) as SubmitAction
 
-  switch (action._action) {
-    case 'postTodo':
-      if (action.text.length === 0) {
-        return json(
-          {
-            error: { message: 'The "text" parameter cannot be empty' },
-          },
-          { status: 400 }
-        )
-      }
-      return await createTodo(user.id, action.text)
+  try {
+    switch (action._action) {
+      case 'postTodo':
+        if (action.text.length === 0) {
+          return json(
+            {
+              error: { message: 'The "text" parameter cannot be empty' },
+            },
+            { status: 400 }
+          )
+        }
+        return await createTodo(user.id, action.text)
 
-    case 'patchDone':
-      return await updateTodo(action.id, {
-        completed: Boolean(action.completed),
-      })
+      case 'patchDone':
+        return await updateTodo(action.id, {
+          completed: Boolean(action.completed),
+        })
 
-    case 'patchText':
-      return await updateTodo(action.id, {
-        text: action.text,
-      })
+      case 'patchText':
+        return await updateTodo(action.id, {
+          text: action.text,
+        })
 
-    case 'deleteTodo':
-      return await deleteTodo(user.id, action.id)
+      case 'deleteTodo':
+        return await deleteTodo(user.id, action.id)
 
-    case 'deleteDone':
-      return await deleteDone(user.id)
+      case 'deleteDone':
+        return await deleteDone(user.id)
 
-    case 'patchMoveTodoForward':
-      return await moveTodoForward(user.id, action.id, action.moveToTodoId)
+      case 'patchMoveTodoForward':
+        return await moveTodoForward(user.id, action.id, action.moveToTodoId)
 
-    case 'patchMoveTodoBackwards':
-      return await moveTodoBackwards(user.id, action.id, action.moveToTodoId)
+      case 'patchMoveTodoBackwards':
+        return await moveTodoBackwards(user.id, action.id, action.moveToTodoId)
 
-    default:
-      return {}
+      default:
+        return {}
+    }
+  } catch (error) {
+    console.error('Error while executing an action: ', error)
+    return null
   }
 }
 
