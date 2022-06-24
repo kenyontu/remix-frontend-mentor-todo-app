@@ -21,6 +21,7 @@ import { themeSessionResolver } from '~/session.server'
 export const meta: MetaFunction = () => ({
   charset: 'utf-8',
   title: 'Frontend Mentor | Todo App',
+  description: 'Frontend Mentor solution for the Todo App challenge.',
   viewport: 'width=device-width,initial-scale=1',
 })
 
