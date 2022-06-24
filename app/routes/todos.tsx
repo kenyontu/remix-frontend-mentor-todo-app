@@ -559,7 +559,7 @@ export function useOrderedTodos(todos: Todo[], lastTodoId: string | null) {
 
     result[i] = current
 
-    while (current?.previous) {
+    while (current?.previous && i >= 0) {
       current = result[--i] = todosMap.get(current.previous)
     }
 
