@@ -94,17 +94,22 @@ export async function deleteTodo(userId: string, todoId: string) {
   return todo
 }
 
-export async function deleteDone(userId: string) {
+/**
+ * Delete a user's completed todos
+ *
+ */
+export async function deleteComplete(userId: string) {
   const todos = await prisma.todo.findMany({
     where: { userId, completed: true },
   })
 
-  const deletedTodos = []
+  const deletedTodoIds: string[] = []
   for (let i = 0; i < todos.length; i++) {
-    deletedTodos.push(await deleteTodo(userId, todos[i].id))
+    const deletedTodo = await deleteTodo(userId, todos[i].id)
+    if (deletedTodo) deletedTodoIds.push(deletedTodo.id)
   }
 
-  return deletedTodos
+  return deletedTodoIds
 }
 
 /**

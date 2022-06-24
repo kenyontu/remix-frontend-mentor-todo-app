@@ -19,7 +19,7 @@ import {
   createTodo,
   deleteTodo,
   updateTodo,
-  deleteDone,
+  deleteComplete,
   moveTodoForward,
   moveTodoBackwards,
 } from '~/models/todo.server'
@@ -86,7 +86,7 @@ type SubmitAction =
       id: string
     }
   | {
-      _action: 'deleteDone'
+      _action: 'deleteComplete'
     }
   | {
       _action: 'patchMoveTodoForward'
@@ -132,8 +132,8 @@ export const action: ActionFunction = async ({ request }) => {
       case 'deleteTodo':
         return await deleteTodo(user.id, action.id)
 
-      case 'deleteDone':
-        return await deleteDone(user.id)
+      case 'deleteComplete':
+        return await deleteComplete(user.id)
 
       case 'patchMoveTodoForward':
         return await moveTodoForward(user.id, action.id, action.moveToTodoId)
@@ -319,7 +319,11 @@ export default function TodosPage() {
                   />
 
                   <clearCompleted.Form method="delete">
-                    <input type="hidden" name="_action" value="deleteDone" />
+                    <input
+                      type="hidden"
+                      name="_action"
+                      value="deleteComplete"
+                    />
                     <button
                       className="bottom-text clear-completed-btn"
                       type="submit"
@@ -615,7 +619,7 @@ function useOptimisticTodos(todos: Todo[]) {
           })
         break
 
-      case 'deleteDone':
+      case 'deleteComplete':
         map.forEach((value, key) => {
           if (value.completed)
             map.set(key, { ...value, isDeleted: true, isOptimistic: true })
