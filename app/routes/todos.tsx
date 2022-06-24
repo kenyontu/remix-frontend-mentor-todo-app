@@ -162,7 +162,8 @@ export default function TodosPage() {
 
   const orderedTodos = useOrderedTodos(todos, lastTodoId)
   const optimisticTodos = useOptimisticTodos(orderedTodos)
-  const { activeCount, completedCount } = useTodoCounters(optimisticTodos)
+  const { activeCount, completedCount, movingCount } =
+    useTodoCounters(optimisticTodos)
 
   const showNoTodoMessage =
     filter === 'active'
@@ -171,7 +172,7 @@ export default function TodosPage() {
       ? completedCount === 0
       : activeCount + completedCount === 0 && todosBeingCreated.length === 0
 
-  const isDragDisabled = todosBeingCreated.length > 0
+  const isDragDisabled = todosBeingCreated.length > 0 || movingCount > 0
 
   return (
     <div className="container">
@@ -643,6 +644,7 @@ function useTodoCounters(todos: OptimisticTodo[]) {
 
   let activeCount = 0
   let completedCount = 0
+  let movingCount = 0
 
   for (let i = 0; i < todos.length; i++) {
     if (todos[i].isDeleted) continue
@@ -657,13 +659,20 @@ function useTodoCounters(todos: OptimisticTodo[]) {
 
   // Also take into account the todos being created
   for (let i = 0; i < fetchers.length; i++) {
-    if (fetchers[i].submission?.formData.get('_action') === 'postTodo') {
+    const action = fetchers[i].submission?.formData.get('_action')
+    if (action === 'postTodo') {
       activeCount++
+    } else if (
+      action === 'patchMoveTodoBackwards' ||
+      action === 'patchMoveTodoForward'
+    ) {
+      movingCount++
     }
   }
 
   return {
     activeCount,
     completedCount,
+    movingCount,
   }
 }
