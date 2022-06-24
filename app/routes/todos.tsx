@@ -179,6 +179,7 @@ export default function TodosPage() {
       <Header />
       <main>
         <form
+          autoComplete="off"
           onSubmit={(event) => {
             event.preventDefault()
             // In Remix, when a form is submitted, the request can be tracked
@@ -490,6 +491,7 @@ function TodoItem({
           </toggleFetcher.Form>
 
           <descriptionFetcher.Form
+            autoComplete="off"
             className="description-form"
             onPointerDown={(event) => event.stopPropagation()}
           >
