@@ -12,6 +12,18 @@
   outline-offset: 0.2rem;
 }
 
+@supports selector(:focus-visible) {
+  .toggle-theme-btn:focus {
+    outline: none;
+    outline-offset: none;
+  }
+}
+
+.toggle-theme-btn:focus-visible {
+  outline: 1px solid var(--clr-white);
+  outline-offset: 0.2rem;
+}
+
 .toggle-theme-btn img {
   height: var(--theme-icon-size);
   width: var(--theme-icon-size);

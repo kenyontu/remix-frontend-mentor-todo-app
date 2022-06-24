@@ -132,10 +132,31 @@
   background: var(--clr-todo-check-border);
 }
 
+.check-form input[type='checkbox']:focus + .check {
+  background: var(--clr-todo-check-checked-bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 55%, auto;
+}
+
+@supports selector(:focus-visible) {
+  .check-form input[type='checkbox']:focus + .check {
+    background: var(--clr-todo-check-border);
+    background-repeat: none;
+    background-position: none;
+    background-size: none;
+  }
+}
+
+.check-form input[type='checkbox']:focus-visible + .check {
+  background: var(--clr-todo-check-checked-bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 55%, auto;
+}
+
 .check-form .check:hover,
-.check-form input[type='checkbox']:focus + .check,
 .check-form input[type='checkbox']:checked + .check {
-  cursor: pointer;
   background: var(--clr-todo-check-checked-bg);
   background-repeat: no-repeat;
   background-position: center;
@@ -193,6 +214,18 @@
   outline-offset: 0.2rem;
 }
 
+@supports selector(:focus-visible) {
+  .todo-delete-btn:focus {
+    outline: none;
+    outline-offset: none;
+  }
+}
+
+.todo-delete-btn:focus-visible {
+  outline: 1px solid var(--clr-todo-delete-btn-outline);
+  outline-offset: 0.2rem;
+}
+
 .todo-delete-btn img {
   width: var(--delete-icon-size);
   height: var(--delete-icon-size);
@@ -221,12 +254,26 @@
   letter-spacing: 0.15px;
 }
 
-button.bottom-text:hover,
-button.bottom-text:focus {
+button.bottom-text:hover {
   color: var(--clr-bottom-bar-text-hover);
 }
 
 button.bottom-text:focus {
+  color: var(--clr-bottom-bar-text-hover);
+  outline: 1px solid var(--clr-bottom-bar-text-hover);
+  outline-offset: 0.2rem;
+}
+
+@supports selector(:focus-visible) {
+  button.bottom-text:focus {
+    color: var(--clr-bottom-bar-text);
+    outline: none;
+    outline-offset: none;
+  }
+}
+
+button.bottom-text:focus-visible {
+  color: var(--clr-bottom-bar-text-hover);
   outline: 1px solid var(--clr-bottom-bar-text-hover);
   outline-offset: 0.2rem;
 }

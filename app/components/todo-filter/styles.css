@@ -32,6 +32,18 @@
   outline-offset: 0.2rem;
 }
 
+@supports selector(:focus-visible) {
+  .filter-option > input[type='radio']:focus + label {
+    outline: none;
+    outline-offset: none;
+  }
+}
+
+.filter-option > input[type='radio']:focus-visible + label {
+  outline: 1px solid var(--clr-todo-filter-inactive-hover);
+  outline-offset: 0.2rem;
+}
+
 .filter-option > input[type='radio']:checked + label {
   color: var(--clr-todo-filter-active);
 }
@@ -39,10 +51,6 @@
 .filter-option > input[type='radio']:not(:checked):focus + label,
 .filter-option > input[type='radio']:not(:checked) + label:hover {
   color: var(--clr-todo-filter-inactive-hover);
-}
-
-.filter-option > input[type='checkbox']:focus + label {
-  outline: 1px solid;
 }
 
 @media only screen and (min-width: 786px) {
