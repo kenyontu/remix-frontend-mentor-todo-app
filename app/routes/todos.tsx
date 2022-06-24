@@ -575,13 +575,12 @@ type OptimisticTodo = Todo & {
 }
 
 /**
- * Consolidates part of the todos state and the optimistic values of ongoing
- * fetchers into a map, making it easier to query the optimistic value of a
- * todo
+ * Takes the actual todos and apply the optimistic changes of ongoing todo
+ * fetchers.
  *
- * @param todos An array containing the currently existing todos
+ * @param todos An array containing the currently existing todos.
  *
- * @returns A map with the optimistic values of each todo
+ * @returns A list of todos with the optimistic changes applied.
  */
 function useOptimisticTodos(todos: Todo[]) {
   const fetchers = useFetchers()
