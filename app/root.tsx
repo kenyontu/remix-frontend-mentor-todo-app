@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type {
   MetaFunction,
   LinksFunction,
@@ -47,9 +48,21 @@ export const loader: LoaderFunction = async ({ request }) => {
 function App() {
   const data = useLoaderData()
   const [theme] = useTheme()
+  const [isWebpSupported, setIsWebpSupported] = useState(false)
+
+  useEffect(() => {
+    if (window.Modernizr) {
+      window.Modernizr.on('webp', (result) => {
+        if (result) setIsWebpSupported(true)
+      })
+    }
+  }, [])
 
   return (
-    <html lang="en" className={theme ?? ''}>
+    <html
+      lang="en"
+      className={`${theme ?? ''}${isWebpSupported ? ' webp' : ''}`}
+    >
       <head>
         <Meta />
         <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
@@ -58,6 +71,7 @@ function App() {
       <body>
         <Outlet />
         <ScrollRestoration />
+        <script src="scripts/vendor/modernizr.js" />
         <Scripts />
         <LiveReload />
       </body>

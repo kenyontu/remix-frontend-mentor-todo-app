@@ -91,10 +91,14 @@ html {
   --clr-drag-drop-msg: var(--clr-grayish-blue-600);
 }
 
+html.webp {
+  --background: url('/images/bg-mobile-light.webp');
+}
+
 /* Dark mode colors */
 html.dark {
   --clr-background: var(--clr-dark-blue-900);
-  --background: url('/images/bg-mobile-dark.jpg') no-repeat;
+  --background: url('/images/bg-mobile-dark.jpg');
 
   /* Todo colors */
   --clr-todo-bg: var(--clr-dark-blue-800);
@@ -121,6 +125,10 @@ html.dark {
 
   /* Drag and drop message */
   --clr-drag-drop-msg: var(--clr-grayish-blue-700);
+}
+
+html.webp.dark {
+  --background: url('/images/bg-mobile-dark.webp');
 }
 
 *,
@@ -164,8 +172,16 @@ button {
     --background: url('/images/bg-desktop-light.jpg');
   }
 
+  html.webp {
+    --background: url('/images/bg-desktop-light.webp');
+  }
+
   html.dark {
     --background: url('/images/bg-desktop-dark.jpg');
+  }
+
+  html.webp.dark {
+    --background: url('/images/bg-desktop-dark.webp');
   }
 }
 
