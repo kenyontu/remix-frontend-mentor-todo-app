@@ -48,12 +48,12 @@ export const loader: LoaderFunction = async ({ request }) => {
 function App() {
   const data = useLoaderData()
   const [theme] = useTheme()
-  const [isWebpSupported, setIsWebpSupported] = useState(false)
+  const [isWebpSupported, setIsWebpSupported] = useState(true)
 
   useEffect(() => {
     if (window.Modernizr) {
       window.Modernizr.on('webp', (result) => {
-        if (result) setIsWebpSupported(true)
+        if (!result) setIsWebpSupported(false)
       })
     }
   }, [])
@@ -61,7 +61,7 @@ function App() {
   return (
     <html
       lang="en"
-      className={`${theme ?? ''}${isWebpSupported ? ' webp' : ''}`}
+      className={`${theme ?? ''}${!isWebpSupported ? ' no-webp' : ''}`}
     >
       <head>
         <Meta />

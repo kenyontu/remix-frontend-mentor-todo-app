@@ -52,7 +52,7 @@
 /* Light mode colors */
 html {
   --clr-background: var(--clr-gray-100);
-  --background: url('/images/bg-mobile-light.jpg');
+  --background: url('/images/bg-mobile-light.webp');
 
   /* Header colors */
   --clr-header-title: var(--clr-white);
@@ -91,14 +91,14 @@ html {
   --clr-drag-drop-msg: var(--clr-grayish-blue-600);
 }
 
-html.webp {
-  --background: url('/images/bg-mobile-light.webp');
+html.no-webp {
+  --background: url('/images/bg-mobile-light.jpg');
 }
 
 /* Dark mode colors */
 html.dark {
   --clr-background: var(--clr-dark-blue-900);
-  --background: url('/images/bg-mobile-dark.jpg');
+  --background: url('/images/bg-mobile-dark.webp');
 
   /* Todo colors */
   --clr-todo-bg: var(--clr-dark-blue-800);
@@ -127,8 +127,8 @@ html.dark {
   --clr-drag-drop-msg: var(--clr-grayish-blue-700);
 }
 
-html.webp.dark {
-  --background: url('/images/bg-mobile-dark.webp');
+html.dark.no-webp {
+  --background: url('/images/bg-mobile-dark.jpg');
 }
 
 *,
@@ -169,19 +169,19 @@ button {
   }
 
   html {
-    --background: url('/images/bg-desktop-light.jpg');
-  }
-
-  html.webp {
     --background: url('/images/bg-desktop-light.webp');
   }
 
-  html.dark {
-    --background: url('/images/bg-desktop-dark.jpg');
+  html.no-webp {
+    --background: url('/images/bg-desktop-light.jpg');
   }
 
-  html.webp.dark {
+  html.dark {
     --background: url('/images/bg-desktop-dark.webp');
+  }
+
+  html.dark.no-webp {
+    --background: url('/images/bg-desktop-dark.jpg');
   }
 }
 
