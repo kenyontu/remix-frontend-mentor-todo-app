@@ -470,12 +470,7 @@ function TodoItem({
           {...provided.dragHandleProps}
           aria-label="Change todo order"
         >
-          <toggleFetcher.Form
-            className="check-form"
-            method="patch"
-            replace
-            onPointerDown={(event) => event.stopPropagation()}
-          >
+          <toggleFetcher.Form className="check-form" method="patch" replace>
             <input type="hidden" name="_action" value="patchDone" />
             <input type="hidden" name="id" value={todo.id} />
             <input
@@ -493,7 +488,6 @@ function TodoItem({
           <descriptionFetcher.Form
             autoComplete="off"
             className="description-form"
-            onPointerDown={(event) => event.stopPropagation()}
           >
             <input
               disabled={optimistic}
@@ -508,10 +502,7 @@ function TodoItem({
             />
           </descriptionFetcher.Form>
 
-          <deleteFetcher.Form
-            method="delete"
-            onPointerDown={(event) => event.stopPropagation()}
-          >
+          <deleteFetcher.Form method="delete">
             <input type="hidden" name="id" defaultValue={todo.id} />
             <button
               disabled={isDeleting || optimistic}
