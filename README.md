@@ -2,6 +2,11 @@
 
 This is a solution to the [Todo app challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/todo-app-Su1_KokOW). Frontend Mentor challenges help you improve your coding skills by building realistic projects.
 
+The live site can be accessed here: [https://remix-frontend-mentor-todo-app.netlify.app](https://remix-frontend-mentor-todo-app.netlify.app)
+
+> **Warning**
+> This showcase app has an actual online database where the created todos are saved
+
 ## Table of contents
 
 - [Setup](#setup)
@@ -112,8 +117,7 @@ Users should be able to:
 
 ### Links
 
-- Solution URL: [Add solution URL here](https://your-solution-url.com)
-- Live Site URL: [Add live site URL here](https://your-live-site-url.com)
+- Live Site URL: [https://remix-frontend-mentor-todo-app.netlify.app](https://remix-frontend-mentor-todo-app.netlify.app)
 
 ## My process
 
