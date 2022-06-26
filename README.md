@@ -153,7 +153,7 @@ Since you can have multiple todos being created, updated or deleted, todos being
 
 This was one of the major issues I found, it becomes a more complex task when you need to save user-defined order in a database. After some research on discussions about how to tackle this issue, I decided on saving the todos as a reverse linked-list, where each todo has the ID to the previous todo. At the rendering stage the linked-list is reconstructed and the user-defined order is restored.
 
-There are many ways to implement this, each with their own downsides, I decided to go with the linked-list approach because it was fairly simple and didn't require a reocurring job.
+There are many ways to implement this, each with their own downsides, I decided to go with the linked-list approach because it was fairly simple and didn't require a reocurring job maintaining the records in the database.
 
 ### Useful resources
 
