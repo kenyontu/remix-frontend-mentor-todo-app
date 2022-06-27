@@ -149,16 +149,10 @@ My process to implement Optimistic UI was to delay every request by 3 seconds on
 
 Since you can have multiple todos being created, updated or deleted, todos being reordered, the user changing the filter or clearing completed todos. After some failed attempts I think I reached a good solution. Centralizing the changes by creating a copy of list of todos and them applying each ongoing request to it, made it a lot more predictable and easier to implement changes.
 
-#### Reordering todos
-
-This was one of the major issues I found, it becomes a more complex task when you need to save user-defined order in a database. After some research on discussions about how to tackle this issue, I decided on saving the todos as a reverse linked-list, where each todo has the ID to the previous todo. At the rendering stage the linked-list is reconstructed and the user-defined order is restored.
-
-There are many ways to implement this, each with their own downsides, I decided to go with the linked-list approach because it was fairly simple and didn't require a reocurring job maintaining the records in the database.
-
 ### Useful resources
 
 - [Remix's Documentation page](https://remix.run/docs/en/v1) - Most of my learning on Remix was by reading the documentation.
 - [Remix's GitHub repo](https://github.com/remix-run/remix) - The source code, multiple examples, discussions and issues were a great source of information.
 - [Remix's Youtube channel](https://www.youtube.com/c/Remix-Run) - The "Remix Single" series by Ryan Florence is a must watch for anyone trying to learn Remix.
 - [Prisma's Documentation](https://www.prisma.io/docs/) - From learning to build a scheme to making nested writes and transactions, the Prisma's documentation was a good source of learning material.
-- [Hacker News' discussion on maintaining user-defined order in a database](https://news.ycombinator.com/item?id=25797674) - I got the idea to store the todos as a linked-list to maintain the order from the comments discussing this topic.
+- [Hacker News' discussion on maintaining user-defined order in a database](https://news.ycombinator.com/item?id=25797674)
