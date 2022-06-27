@@ -20,7 +20,7 @@ async function autoRetry<T = {}>(execute: () => Promise<T>) {
   return null
 }
 
-export async function createTodo(userId: number, text: string) {
+export async function createTodo(userId: string, text: string) {
   const result = await autoRetry(async () => {
     return prisma.$transaction(async (prisma) => {
       const lastOrder = await prisma.todo.findFirst({
@@ -43,7 +43,7 @@ export async function createTodo(userId: number, text: string) {
   return result ?? null
 }
 
-export async function getUserTodos(userId: number) {
+export async function getUserTodos(userId: string) {
   const result = await autoRetry(async () => {
     return await prisma.todo.findMany({
       where: {
@@ -59,7 +59,7 @@ export async function getUserTodos(userId: number) {
 }
 
 export async function updateTodo(
-  todoId: number,
+  todoId: string,
   todo: Partial<Omit<Todo, 'id' | 'createdAt' | 'previous'>>
 ) {
   const result = await autoRetry(async () => {
@@ -72,7 +72,7 @@ export async function updateTodo(
   return result ?? null
 }
 
-export async function deleteTodo(todoId: number) {
+export async function deleteTodo(todoId: string) {
   const result = await autoRetry(async () => {
     const deletedTodo = await prisma.todo.delete({ where: { id: todoId } })
     return deletedTodo.id
@@ -81,7 +81,7 @@ export async function deleteTodo(todoId: number) {
   return result ?? null
 }
 
-export async function deleteComplete(userId: number) {
+export async function deleteComplete(userId: string) {
   const result = await autoRetry(async () => {
     return await prisma.todo.deleteMany({
       where: { userId, completed: true },
@@ -92,8 +92,8 @@ export async function deleteComplete(userId: number) {
 }
 
 export async function moveTodoForwards(
-  userId: number,
-  todoId: number,
+  userId: string,
+  todoId: string,
   position: number
 ) {
   const result = await autoRetry(async () => {
@@ -113,8 +113,8 @@ export async function moveTodoForwards(
 }
 
 export async function moveTodoBackwards(
-  userId: number,
-  todoId: number,
+  userId: string,
+  todoId: string,
   position: number
 ) {
   const result = await autoRetry(async () => {

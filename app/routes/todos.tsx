@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { json, redirect } from '@remix-run/node'
 import { useLoaderData, useFetcher, useFetchers } from '@remix-run/react'
 import cx from 'classnames'
+import { nanoid } from 'nanoid'
 import { useDebouncedCallback } from 'use-debounce'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import type {
@@ -44,7 +45,7 @@ type LoaderData = {
 }
 
 type TodoBeingCreated = {
-  operationId: number
+  operationId: string
   todoText: string
 }
 
@@ -115,17 +116,17 @@ export const action: ActionFunction = async ({ request }) => {
         return await createTodo(user.id, action.text)
 
       case 'patchDone':
-        return await updateTodo(parseInt(action.id), {
+        return await updateTodo(action.id, {
           completed: Boolean(action.completed),
         })
 
       case 'patchText':
-        return await updateTodo(parseInt(action.id), {
+        return await updateTodo(action.id, {
           text: action.text,
         })
 
       case 'deleteTodo':
-        return await deleteTodo(parseInt(action.id))
+        return await deleteTodo(action.id)
 
       case 'deleteComplete':
         return await deleteComplete(user.id)
@@ -133,7 +134,7 @@ export const action: ActionFunction = async ({ request }) => {
       case 'patchMoveTodoForwards': {
         const result = await moveTodoForwards(
           user.id,
-          parseInt(action.id),
+          action.id,
           parseInt(action.position)
         )
 
@@ -143,7 +144,7 @@ export const action: ActionFunction = async ({ request }) => {
       case 'patchMoveTodoBackwards': {
         const result = await moveTodoBackwards(
           user.id,
-          parseInt(action.id),
+          action.id,
           parseInt(action.position)
         )
 
@@ -164,10 +165,9 @@ export default function TodosPage() {
   const { todos } = useLoaderData<LoaderData>()
   const [filter, setFilter] = useState<Filter>('all')
 
-  const [{ todosBeingCreated }, setTodosBeingCreated] = useState<{
-    todosBeingCreated: TodoBeingCreated[]
-    count: number
-  }>({ todosBeingCreated: [], count: 0 })
+  const [todosBeingCreated, setTodosBeingCreated] = useState<
+    TodoBeingCreated[]
+  >([])
 
   const clearCompleted = useFetcher()
   const changeTodoOrder = useFetcher()
@@ -222,17 +222,14 @@ export default function TodosPage() {
               return
             }
 
-            setTodosBeingCreated(({ todosBeingCreated, count }) => {
-              return {
-                todosBeingCreated: [
-                  ...todosBeingCreated,
-                  {
-                    operationId: count,
-                    todoText,
-                  },
-                ],
-                count: count + 1,
-              }
+            setTodosBeingCreated((todosBeingCreated) => {
+              return [
+                ...todosBeingCreated,
+                {
+                  operationId: nanoid(),
+                  todoText,
+                },
+              ]
             })
 
             event.currentTarget.reset()
@@ -315,14 +312,11 @@ export default function TodosPage() {
                     todo={todoBeingCreated}
                     hidden={filter === 'completed'}
                     onFinish={() =>
-                      setTodosBeingCreated(({ todosBeingCreated, count }) => {
-                        return {
-                          todosBeingCreated: todosBeingCreated.filter(
-                            (todo) =>
-                              todo.operationId !== todoBeingCreated.operationId
-                          ),
-                          count,
-                        }
+                      setTodosBeingCreated((todosBeingCreated) => {
+                        return todosBeingCreated.filter(
+                          (todo) =>
+                            todo.operationId !== todoBeingCreated.operationId
+                        )
                       })
                     }
                   />
@@ -417,7 +411,7 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
       index={0}
       todo={{
         id: todo.operationId,
-        userId: 0,
+        userId: '',
         createdAt: new Date(Date.now()),
         text: todo.todoText,
         completed: false,
@@ -559,7 +553,7 @@ function useOptimisticTodos(todos: Todo[]) {
   const fetchers = useFetchers()
 
   let order = todos.map((todo) => todo.id)
-  const map: Map<number, OptimisticTodo> = new Map()
+  const map: Map<string, OptimisticTodo> = new Map()
 
   todos.forEach((todo) => {
     map.set(todo.id, todo)
@@ -574,7 +568,7 @@ function useOptimisticTodos(todos: Todo[]) {
 
     switch (action._action) {
       case 'deleteTodo': {
-        const todoId = parseInt(action.id)
+        const todoId = action.id
         if (map.has(todoId))
           map.set(todoId, {
             ...(map.get(todoId) as OptimisticTodo),
@@ -585,7 +579,7 @@ function useOptimisticTodos(todos: Todo[]) {
       }
 
       case 'patchDone':
-        const todoId = parseInt(action.id)
+        const todoId = action.id
         if (map.has(todoId))
           map.set(todoId, {
             ...(map.get(todoId) as OptimisticTodo),
@@ -603,7 +597,7 @@ function useOptimisticTodos(todos: Todo[]) {
 
       case 'patchMoveTodoForwards':
       case 'patchMoveTodoBackwards': {
-        const todoId = parseInt(action.id)
+        const todoId = action.id
         const position = parseInt(action.position)
 
         const oldIndex = order.indexOf(todoId)
