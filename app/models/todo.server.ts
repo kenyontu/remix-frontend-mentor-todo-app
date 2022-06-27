@@ -22,21 +22,19 @@ async function autoRetry<T = {}>(execute: () => Promise<T>) {
 
 export async function createTodo(userId: number, text: string) {
   const result = await autoRetry(async () => {
-    return prisma.$transaction(async (prisma) => {
-      const lastOrder = await prisma.todo.findFirst({
-        where: { userId },
-        orderBy: { order: 'desc' },
-      })
+    const lastOrder = await prisma.todo.findFirst({
+      where: { userId },
+      orderBy: { order: 'desc' },
+    })
 
-      return await prisma.todo.create({
-        data: {
-          text,
-          order: lastOrder ? lastOrder.order + 1 : 1,
-          user: {
-            connect: { id: userId },
-          },
+    return await prisma.todo.create({
+      data: {
+        text,
+        order: lastOrder ? lastOrder.order + 1 : 1,
+        user: {
+          connect: { id: userId },
         },
-      })
+      },
     })
   })
 
