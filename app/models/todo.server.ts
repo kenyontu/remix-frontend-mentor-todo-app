@@ -97,15 +97,17 @@ export async function moveTodoForwards(
   position: number
 ) {
   const result = await autoRetry(async () => {
-    const transactions = [
-      prisma.todo.updateMany({
+    await prisma.$transaction(async (prisma) => {
+      await prisma.todo.updateMany({
         where: { userId, order: { gte: position } },
         data: { order: { increment: 1 } },
-      }),
-      prisma.todo.update({ where: { id: todoId }, data: { order: position } }),
-    ]
+      })
 
-    await prisma.$transaction(transactions)
+      await prisma.todo.update({
+        where: { id: todoId },
+        data: { order: position },
+      })
+    })
     return true
   })
 
@@ -118,15 +120,17 @@ export async function moveTodoBackwards(
   position: number
 ) {
   const result = await autoRetry(async () => {
-    const transactions = [
-      prisma.todo.updateMany({
+    await prisma.$transaction(async (prisma) => {
+      await prisma.todo.updateMany({
         where: { userId, order: { lte: position } },
         data: { order: { decrement: 1 } },
-      }),
-      prisma.todo.update({ where: { id: todoId }, data: { order: position } }),
-    ]
+      })
 
-    await prisma.$transaction(transactions)
+      await prisma.todo.update({
+        where: { id: todoId },
+        data: { order: position },
+      })
+    })
     return true
   })
 
