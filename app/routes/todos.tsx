@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { json, redirect } from '@remix-run/node'
 import { useLoaderData, useFetcher, useFetchers } from '@remix-run/react'
-import { nanoid } from 'nanoid'
 import cx from 'classnames'
 import { useDebouncedCallback } from 'use-debounce'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
@@ -20,7 +19,7 @@ import {
   deleteTodo,
   updateTodo,
   deleteComplete,
-  moveTodoForward,
+  moveTodoForwards,
   moveTodoBackwards,
 } from '~/models/todo.server'
 
@@ -28,7 +27,6 @@ import styles from '~/styles/todos.css'
 import { Header, links as headerLinks } from '~/components/layout/header'
 import { TodoFilter, links as todoFilterLinks } from '~/components/todo-filter'
 import type { Filter } from '~/components/todo-filter'
-import { getUserLastTodoByUserId } from '~/models/user-last-todo.server'
 import { ActiveTodoCounter } from '~/components/active-todo-counter'
 
 export const meta: MetaFunction = () => ({
@@ -43,11 +41,10 @@ export const links: LinksFunction = () => [
 
 type LoaderData = {
   todos: Todo[]
-  lastTodoId: string | null
 }
 
 type TodoBeingCreated = {
-  operationId: string
+  operationId: number
   todoText: string
 }
 
@@ -57,10 +54,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!user) return redirect('/')
 
   const todos = await getUserTodos(user.id)
-  const userLastTodo = await getUserLastTodoByUserId(user.id)
   const response: LoaderData = {
     todos,
-    lastTodoId: userLastTodo?.todoId ?? null,
   }
 
   return json(response)
@@ -89,14 +84,14 @@ type SubmitAction =
       _action: 'deleteComplete'
     }
   | {
-      _action: 'patchMoveTodoForward'
+      _action: 'patchMoveTodoForwards'
       id: string
-      moveToTodoId: string
+      position: string
     }
   | {
       _action: 'patchMoveTodoBackwards'
       id: string
-      moveToTodoId: string
+      position: string
     }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -120,26 +115,41 @@ export const action: ActionFunction = async ({ request }) => {
         return await createTodo(user.id, action.text)
 
       case 'patchDone':
-        return await updateTodo(action.id, {
+        return await updateTodo(parseInt(action.id), {
           completed: Boolean(action.completed),
         })
 
       case 'patchText':
-        return await updateTodo(action.id, {
+        return await updateTodo(parseInt(action.id), {
           text: action.text,
         })
 
       case 'deleteTodo':
-        return await deleteTodo(user.id, action.id)
+        return await deleteTodo(parseInt(action.id))
 
       case 'deleteComplete':
         return await deleteComplete(user.id)
 
-      case 'patchMoveTodoForward':
-        return await moveTodoForward(user.id, action.id, action.moveToTodoId)
+      case 'patchMoveTodoForwards': {
+        const result = await moveTodoForwards(
+          user.id,
+          parseInt(action.id),
+          parseInt(action.position)
+        )
 
-      case 'patchMoveTodoBackwards':
-        return await moveTodoBackwards(user.id, action.id, action.moveToTodoId)
+        if (result) return new Response(null, { status: 204 })
+        return {}
+      }
+      case 'patchMoveTodoBackwards': {
+        const result = await moveTodoBackwards(
+          user.id,
+          parseInt(action.id),
+          parseInt(action.position)
+        )
+
+        if (result) return new Response(null, { status: 204 })
+        return {}
+      }
 
       default:
         return {}
@@ -151,17 +161,18 @@ export const action: ActionFunction = async ({ request }) => {
 }
 
 export default function TodosPage() {
-  const { todos, lastTodoId } = useLoaderData<LoaderData>()
+  const { todos } = useLoaderData<LoaderData>()
   const [filter, setFilter] = useState<Filter>('all')
 
-  const [todosBeingCreated, setTodosBeingCreated] = useState<
-    TodoBeingCreated[]
-  >([])
+  const [{ todosBeingCreated }, setTodosBeingCreated] = useState<{
+    todosBeingCreated: TodoBeingCreated[]
+    count: number
+  }>({ todosBeingCreated: [], count: 0 })
+
   const clearCompleted = useFetcher()
   const changeTodoOrder = useFetcher()
 
-  const orderedTodos = useOrderedTodos(todos, lastTodoId)
-  const optimisticTodos = useOptimisticTodos(orderedTodos)
+  const optimisticTodos = useOptimisticTodos(todos)
   const { activeCount, completedCount, movingCount } =
     useTodoCounters(optimisticTodos)
 
@@ -211,13 +222,18 @@ export default function TodosPage() {
               return
             }
 
-            setTodosBeingCreated((todosBeingCreated) => [
-              ...todosBeingCreated,
-              {
-                operationId: nanoid(),
-                todoText,
-              },
-            ])
+            setTodosBeingCreated(({ todosBeingCreated, count }) => {
+              return {
+                todosBeingCreated: [
+                  ...todosBeingCreated,
+                  {
+                    operationId: count,
+                    todoText,
+                  },
+                ],
+                count: count + 1,
+              }
+            })
 
             event.currentTarget.reset()
           }}
@@ -243,15 +259,15 @@ export default function TodosPage() {
               return
             }
 
-            const actionName =
-              result.destination.index > result.source.index
-                ? 'patchMoveTodoBackwards'
-                : 'patchMoveTodoForward'
+            const actionType =
+              result.source.index > result.destination.index
+                ? 'patchMoveTodoForwards'
+                : 'patchMoveTodoBackwards'
 
             const action: SubmitAction = {
-              _action: actionName,
-              id: orderedTodos[result.source.index].id,
-              moveToTodoId: orderedTodos[result.destination.index].id,
+              _action: actionType,
+              id: todos[result.source.index].id.toString(),
+              position: todos[result.destination.index].order.toString(),
             }
 
             changeTodoOrder.submit(action, { method: 'patch', replace: true })
@@ -299,12 +315,15 @@ export default function TodosPage() {
                     todo={todoBeingCreated}
                     hidden={filter === 'completed'}
                     onFinish={() =>
-                      setTodosBeingCreated(
-                        todosBeingCreated.filter(
-                          (todo) =>
-                            todo.operationId !== todoBeingCreated.operationId
-                        )
-                      )
+                      setTodosBeingCreated(({ todosBeingCreated, count }) => {
+                        return {
+                          todosBeingCreated: todosBeingCreated.filter(
+                            (todo) =>
+                              todo.operationId !== todoBeingCreated.operationId
+                          ),
+                          count,
+                        }
+                      })
                     }
                   />
                 ))}
@@ -364,7 +383,7 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
       create.submit(
         {
           _action: 'postTodo',
-          operationId: todo.operationId,
+          operationId: todo.operationId.toString(),
           text: todo.todoText,
         },
         { method: 'post', replace: true }
@@ -398,11 +417,11 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
       index={0}
       todo={{
         id: todo.operationId,
-        previous: null,
-        userId: '',
+        userId: 0,
         createdAt: new Date(Date.now()),
         text: todo.todoText,
         completed: false,
+        order: 0,
       }}
     />
   )
@@ -439,7 +458,7 @@ function TodoItem({
       descriptionFetcher.submit(
         {
           _action: 'patchText',
-          id: todo.id,
+          id: todo.id.toString(),
           text: event.target.value,
         },
         { method: 'patch', replace: true }
@@ -452,11 +471,12 @@ function TodoItem({
     ? Boolean(toggleFetcher.submission.formData.get('completed'))
     : todo.completed
 
-  const isDeleting = deleteFetcher.submission?.formData.get('id') === todo.id
+  const isDeleting =
+    deleteFetcher.submission?.formData.get('id') === todo.id.toString()
 
   return (
     <Draggable
-      draggableId={todo.id}
+      draggableId={todo.id.toString()}
       index={index}
       isDragDisabled={dragDisabled || optimistic || hidden}
     >
@@ -522,47 +542,6 @@ function TodoItem({
   )
 }
 
-/**
- * Hook to restore the user-defined order of the todos
- *
- * Since the todos are stored as a linked-list, we need this hook to recreate
- * the order defined by the pointers of the linked-list items.
- *
- * @param todos - The list of todos
- *
- * @param lastTodoId - The id of the last todo in linked-list
- *
- * @returns A memoized list of todos in the user-defined order
- */
-export function useOrderedTodos(todos: Todo[], lastTodoId: string | null) {
-  const orderedTodos = useMemo(() => {
-    if (todos.length === 0 || lastTodoId === null) return []
-
-    // Convert the array of todos into a map where the todo's id is the key and
-    // the todo is the value
-    const todosMap = new Map<string, Todo>()
-    todos.forEach((todo) => todosMap.set(todo.id, todo))
-
-    // Since we have a linked-list that goes backwards, where each element
-    // has the id of the previous element. We initialize an array with the
-    // same size as our array of todos and then, while iterating through the
-    // linked-list, we fill our result array from the last to the first element
-    const result = new Array(todos.length)
-    let i = todos.length - 1
-    let current = todosMap.get(lastTodoId)
-
-    result[i] = current
-
-    while (current?.previous && i >= 0) {
-      current = result[--i] = todosMap.get(current.previous)
-    }
-
-    return result
-  }, [todos, lastTodoId])
-
-  return orderedTodos
-}
-
 type OptimisticTodo = Todo & {
   isDeleted?: boolean
   isOptimistic?: boolean
@@ -580,7 +559,7 @@ function useOptimisticTodos(todos: Todo[]) {
   const fetchers = useFetchers()
 
   let order = todos.map((todo) => todo.id)
-  const map: Map<string, OptimisticTodo> = new Map()
+  const map: Map<number, OptimisticTodo> = new Map()
 
   todos.forEach((todo) => {
     map.set(todo.id, todo)
@@ -594,19 +573,22 @@ function useOptimisticTodos(todos: Todo[]) {
     ) as SubmitAction
 
     switch (action._action) {
-      case 'deleteTodo':
-        if (map.has(action.id))
-          map.set(action.id, {
-            ...(map.get(action.id) as OptimisticTodo),
+      case 'deleteTodo': {
+        const todoId = parseInt(action.id)
+        if (map.has(todoId))
+          map.set(todoId, {
+            ...(map.get(todoId) as OptimisticTodo),
             isOptimistic: true,
             isDeleted: true,
           })
         break
+      }
 
       case 'patchDone':
-        if (map.has(action.id))
-          map.set(action.id, {
-            ...(map.get(action.id) as OptimisticTodo),
+        const todoId = parseInt(action.id)
+        if (map.has(todoId))
+          map.set(todoId, {
+            ...(map.get(todoId) as OptimisticTodo),
             completed: Boolean(action.completed),
             isOptimistic: true,
           })
@@ -619,20 +601,23 @@ function useOptimisticTodos(todos: Todo[]) {
         })
         break
 
-      case 'patchMoveTodoForward':
-      case 'patchMoveTodoBackwards':
-        const oldIndex = order.indexOf(action.id)
-        const newIndex = todos.findIndex(
-          (todo) => todo.id === action.moveToTodoId
-        )
-        order.splice(oldIndex, 1)
-        order.splice(newIndex, 0, action.id)
+      case 'patchMoveTodoForwards':
+      case 'patchMoveTodoBackwards': {
+        const todoId = parseInt(action.id)
+        const position = parseInt(action.position)
 
-        map.set(action.id, {
-          ...(map.get(action.id) as OptimisticTodo),
+        const oldIndex = order.indexOf(todoId)
+        const newIndex = todos.findIndex((todo) => todo.order === position)
+
+        order.splice(oldIndex, 1)
+        order.splice(newIndex, 0, todoId)
+
+        map.set(todoId, {
+          ...(map.get(todoId) as OptimisticTodo),
           isOptimistic: true,
         })
         break
+      }
     }
   })
 

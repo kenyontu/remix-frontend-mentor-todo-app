@@ -4,13 +4,7 @@ import { prisma } from '~/db.server'
 
 export async function createUser() {
   const newUser = await prisma.user.create({
-    data: {
-      lastTodo: {
-        create: {
-          todoId: null,
-        },
-      },
-    },
+    data: {},
   })
 
   return { id: newUser.id }
