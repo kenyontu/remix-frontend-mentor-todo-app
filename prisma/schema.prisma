@@ -7,21 +7,21 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   todos     Todo[]
 }
 
 model Todo {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   
+  userId    Int   
   text      String
   completed Boolean  @default(false)
   order     Int      
