@@ -26,12 +26,14 @@ The live site can be accessed here: [https://remix-frontend-mentor-todo-app.netl
 
 ## Setup
 
+The current setup of this application deploys to **Netlify Functions** and uses **Postgresql** as the database.
+
 ### Environment variables
 
 Create a file called `.env` with the following content and replacing with your own environment.
 
 ```
-DATABASE_URL="[Replace with MongoDB connection string]"
+DATABASE_URL="[Replace with Postgresql connection string]"
 SESSION_SECRET="[Replace with password used to encrypt the session cookie]"
 ```
 
@@ -131,7 +133,6 @@ Users should be able to:
 - [Remix](https://remix.run/) - React framework
 - [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd) - Drag and drop library for React
 - [Prisma](https://www.prisma.io/) - Database ORM
-- [MongoDB](https://www.mongodb.com) - NoSQL document database
 
 ### What I learned
 
