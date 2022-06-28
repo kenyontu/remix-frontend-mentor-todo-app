@@ -27,6 +27,9 @@ export async function createTodo(userId: number, text: string) {
       orderBy: { order: 'desc' },
     })
 
+    // We have a unique contraint set on the database with the columns userId
+    // and order, so in case of a race condition where the value of lastOrder
+    // is the same for two operations, one of them will fail and retry
     return await prisma.todo.create({
       data: {
         text,
