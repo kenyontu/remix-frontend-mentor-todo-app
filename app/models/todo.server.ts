@@ -10,11 +10,11 @@ async function autoRetry<T = {}>(execute: () => Promise<T>) {
   let attempts = 0
   while (attempts < maxTries) {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 50))
       return await execute()
     } catch (error) {
       console.error(error)
       attempts++
+      await new Promise((resolve) => setTimeout(resolve, 50))
     }
   }
   return null
