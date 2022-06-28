@@ -43,7 +43,7 @@ type LoaderData = {
   todos: Todo[]
 }
 
-type TodoBeingCreated = {
+type CreateTodoQueueItem = {
   operationId: number
   todoText: string
 }
@@ -164,13 +164,14 @@ export default function TodosPage() {
   const { todos } = useLoaderData<LoaderData>()
   const [filter, setFilter] = useState<Filter>('all')
 
-  const [{ todosBeingCreated }, setTodosBeingCreated] = useState<{
-    todosBeingCreated: TodoBeingCreated[]
+  const [{ createTodoQueue }, setCreateTodoQueue] = useState<{
+    createTodoQueue: CreateTodoQueueItem[]
     count: number
-  }>({ todosBeingCreated: [], count: 0 })
+  }>({ createTodoQueue: [], count: 0 })
 
   const clearCompleted = useFetcher()
   const changeTodoOrder = useFetcher()
+  const createTodoFetchers = useCreateTodoFetchers(todos)
 
   const optimisticTodos = useOptimisticTodos(todos)
   const { activeCount, completedCount, movingCount } =
@@ -178,12 +179,12 @@ export default function TodosPage() {
 
   const showNoTodoMessage =
     filter === 'active'
-      ? activeCount === 0 && todosBeingCreated.length === 0
+      ? activeCount === 0 && createTodoFetchers.length === 0
       : filter === 'completed'
       ? completedCount === 0
-      : activeCount + completedCount === 0 && todosBeingCreated.length === 0
+      : activeCount + completedCount === 0 && createTodoFetchers.length === 0
 
-  const isDragDisabled = todosBeingCreated.length > 0 || movingCount > 0
+  const isDragDisabled = createTodoFetchers.length > 0 || movingCount > 0
 
   return (
     <div className="container">
@@ -222,10 +223,10 @@ export default function TodosPage() {
               return
             }
 
-            setTodosBeingCreated(({ todosBeingCreated, count }) => {
+            setCreateTodoQueue(({ createTodoQueue, count }) => {
               return {
-                todosBeingCreated: [
-                  ...todosBeingCreated,
+                createTodoQueue: [
+                  ...createTodoQueue,
                   {
                     operationId: count,
                     todoText,
@@ -309,24 +310,33 @@ export default function TodosPage() {
                   )
                 })}
                 {provided.placeholder}
-                {todosBeingCreated.map((todoBeingCreated) => (
-                  <TodoCreator
-                    key={todoBeingCreated.operationId}
-                    todo={todoBeingCreated}
-                    hidden={filter === 'completed'}
-                    onFinish={() =>
-                      setTodosBeingCreated(({ todosBeingCreated, count }) => {
-                        return {
-                          todosBeingCreated: todosBeingCreated.filter(
-                            (todo) =>
-                              todo.operationId !== todoBeingCreated.operationId
-                          ),
-                          count,
-                        }
-                      })
-                    }
-                  />
-                ))}
+
+                {/* Optimisitc todos that were not created yet */}
+                {createTodoFetchers.map((fetcher) => {
+                  const operationId = fetcher.submission!.formData.get(
+                    'operationId'
+                  ) as string
+
+                  const text = fetcher.submission!.formData.get(
+                    'text'
+                  ) as string
+
+                  return (
+                    <TodoItem
+                      key={operationId}
+                      optimistic
+                      index={0}
+                      todo={{
+                        id: parseInt(operationId),
+                        userId: 0,
+                        createdAt: new Date(Date.now()),
+                        text,
+                        completed: false,
+                        order: 0,
+                      }}
+                    />
+                  )
+                })}
                 <div className="bottom-bar">
                   <ActiveTodoCounter
                     className="bottom-text"
@@ -358,22 +368,42 @@ export default function TodosPage() {
           </Droppable>
         </DragDropContext>
         <p className="drag-drop-msg">Drag and drop to reorder list</p>
+
+        {/*
+         * For each queued todo, we render a TodoCreator component, which is
+         * responsible for submitting the request that creates the todo
+         */}
+        {createTodoQueue.map((queuedTodo) => (
+          <TodoCreator
+            key={queuedTodo.operationId}
+            todo={queuedTodo}
+            onFinish={() =>
+              setCreateTodoQueue(({ createTodoQueue, count }) => {
+                return {
+                  createTodoQueue: createTodoQueue.filter(
+                    (todo) => todo.operationId !== queuedTodo.operationId
+                  ),
+                  count,
+                }
+              })
+            }
+          />
+        ))}
       </main>
     </div>
   )
 }
 
 type TodoCreatorProps = {
-  todo: TodoBeingCreated
+  todo: CreateTodoQueueItem
   onFinish: () => void
-  hidden?: boolean
 }
 
 /**
  * Component responsible for handling the create todo requests and showing
  * the optimistic version of these todos
  */
-function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
+function TodoCreator({ todo, onFinish }: TodoCreatorProps) {
   const create = useFetcher()
 
   useEffect(() => {
@@ -392,39 +422,11 @@ function TodoCreator({ todo, onFinish, hidden = false }: TodoCreatorProps) {
 
     // 'done' means that the request finished
     if (create.type === 'done') {
-      // For now I won't be adding error handling, but I already give it some
-      // thought and here is my initial approach:
-      //
-      // 1. Save the content of the error as state of this component
-      // 2. If we have an error in the state, show the error message along
-      //    options to retry or cancel the creation
-      // 3. If the user chooses cancel, we can simply call onFinish and the
-      //    submission will be cleared in the parent component
       onFinish()
     }
   }, [create, todo, onFinish])
 
-  // On Firefox there is a less than one second window where both this
-  // component and the actual todo that was created, are displayed at the
-  // same time, causing a flicker. To avoid this,we also hide this todo
-  // when the create request is done
-  const isHidden = hidden || create.type === 'done'
-
-  return (
-    <TodoItem
-      optimistic
-      hidden={isHidden}
-      index={0}
-      todo={{
-        id: todo.operationId,
-        userId: 0,
-        createdAt: new Date(Date.now()),
-        text: todo.todoText,
-        completed: false,
-        order: 0,
-      }}
-    />
-  )
+  return null
 }
 
 type TodoItemProps = {
@@ -660,4 +662,24 @@ function useTodoCounters(todos: OptimisticTodo[]) {
     completedCount,
     movingCount,
   }
+}
+
+function useCreateTodoFetchers(todos: Todo[]) {
+  const fetchers = useFetchers()
+
+  // We create a map with the existing todo ids and filter out fetchers that
+  // have already finished submitting and the created todo already downloaded.
+  //
+  // This ensures that we don't show the actual todo and its optimistic
+  // couterpart at the same time.
+  const map = new Map<number, boolean>()
+  todos.forEach((todo) => map.set(todo.id, true))
+
+  return fetchers.filter((fetcher) => {
+    if (fetcher.submission?.formData.get('_action') !== 'postTodo') return false
+
+    if (fetcher.data && map.has(fetcher.data.id)) return false
+
+    return true
+  })
 }
