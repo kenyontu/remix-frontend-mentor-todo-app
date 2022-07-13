@@ -6,6 +6,8 @@
 }
 
 .title {
+  display: flex;
+  align-items: center;
   font-size: 1.6rem;
   color: var(--clr-header-title);
   text-transform: uppercase;
@@ -13,15 +15,16 @@
 }
 
 .title.loading::after {
-  --sz-spinner: 0.6em;
+  --sz-spinner: 0.45em;
   content: '';
   width: var(--sz-spinner);
   height: var(--sz-spinner);
   border: 2px solid var(--clr-header-spinner);
   border-bottom-color: transparent;
   border-radius: 50%;
-  display: inline-block;
+  display: block;
   margin-left: 1rem;
+  margin-top: -0.2em;
   animation: rotation 1s linear infinite;
 }
 
