@@ -65,7 +65,6 @@
   width: var(--todo-check-size);
   height: var(--todo-check-size);
   border-radius: 50%;
-  border: 1px solid var(--clr-todo-check-border);
 }
 
 .todo-check-form__check:hover {
