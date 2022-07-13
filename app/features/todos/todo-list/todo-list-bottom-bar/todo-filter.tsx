@@ -6,8 +6,6 @@ import styles from './styles.css'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
-type Filter = 'all' | 'active' | 'completed'
-
 type Props = {
   filter: Filter
   onFilterChange: (filter: Filter) => void
@@ -15,8 +13,8 @@ type Props = {
 
 function TodoFilter({ filter, onFilterChange, className, ...props }: Props) {
   return (
-    <div className={cx(className)} {...props} data-todo-filter>
-      <div className="filter-option">
+    <div className={cx('todo-filter', className)} {...props}>
+      <div className="todo-filter__option">
         <input
           id="todo-filter-all"
           type="radio"
@@ -25,7 +23,7 @@ function TodoFilter({ filter, onFilterChange, className, ...props }: Props) {
         />
         <label htmlFor="todo-filter-all">All</label>
       </div>
-      <div className="filter-option">
+      <div className="todo-filter__option">
         <input
           id="todo-filter-active"
           type="radio"
@@ -34,7 +32,7 @@ function TodoFilter({ filter, onFilterChange, className, ...props }: Props) {
         />
         <label htmlFor="todo-filter-active">Active</label>
       </div>
-      <div className="filter-option">
+      <div className="todo-filter__option">
         <input
           id="todo-filter-completed"
           type="radio"

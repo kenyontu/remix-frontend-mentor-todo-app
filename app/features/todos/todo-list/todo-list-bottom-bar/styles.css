@@ -1,0 +1,113 @@
+.bottom-bar {
+  position: relative;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--clr-bottom-bar-bg);
+  border-bottom-left-radius: var(--radius-todo);
+  border-bottom-right-radius: var(--radius-todo);
+  border-top: 1px solid var(--clr-todo-divider);
+}
+
+.bottom-text {
+  padding: 0.2rem 0.09rem 0.15rem;
+  color: var(--clr-bottom-bar-text);
+  font-size: 0.7rem;
+  border-radius: var(--radius-outline);
+  letter-spacing: 0.15px;
+}
+
+button.bottom-text:hover {
+  color: var(--clr-bottom-bar-text-hover);
+}
+
+button.bottom-text:focus-visible {
+  color: var(--clr-bottom-bar-text-hover);
+  outline: 1px solid var(--clr-bottom-bar-text-hover);
+  outline-offset: 0.2rem;
+}
+
+.clear-completed-btn {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.todo-filter {
+  margin-top: 1rem;
+  padding: 1rem 0;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background-color: var(--clr-todo-filter-bg);
+  border-radius: var(--radius-todo);
+}
+
+.todo-filter__option {
+  display: flex;
+  position: relative;
+}
+
+.todo-filter__option > input[type='radio'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.todo-filter__option > label {
+  color: var(--clr-todo-filter-inactive);
+  font-size: 0.9rem;
+  font-weight: var(--fw-josefin-sans-700);
+  cursor: pointer;
+  padding: 0.2em 0.15em 0;
+  border-radius: var(--radius-outline);
+}
+
+.todo-filter__option > input[type='radio']:focus-visible + label {
+  outline: 1px solid var(--clr-todo-filter-inactive-hover);
+  outline-offset: 0.2rem;
+}
+
+.todo-filter__option > input[type='radio']:checked + label {
+  color: var(--clr-todo-filter-active);
+}
+
+.todo-filter__option > input[type='radio']:not(:checked):focus + label,
+.todo-filter__option > input[type='radio']:not(:checked) + label:hover {
+  color: var(--clr-todo-filter-inactive-hover);
+}
+
+@media only screen and (min-width: 786px) {
+  .bottom-bar {
+    padding: 1.2rem 1.25rem 1rem;
+  }
+
+  .bottom-text {
+    font-size: 0.85rem;
+  }
+
+  .todo-filter {
+    position: absolute;
+    margin-top: 0;
+    margin-bottom: -0.2rem;
+    padding: 0;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: none;
+    border-radius: none;
+    transform: translateX(-50%);
+  }
+}

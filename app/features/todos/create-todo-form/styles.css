@@ -1,0 +1,20 @@
+.create-todo {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.25rem 1rem;
+  border-radius: var(--radius-todo);
+  background-color: var(--clr-todo-bg);
+}
+
+.create-todo__check {
+  width: var(--todo-check-size);
+  height: var(--todo-check-size);
+  border-radius: 50%;
+  border: 1px solid var(--clr-todo-check-border);
+}
+
+@media only screen and (min-width: 786px) {
+  .create-todo {
+    padding: 1.2rem 1.5rem 1.3rem;
+  }
+}
