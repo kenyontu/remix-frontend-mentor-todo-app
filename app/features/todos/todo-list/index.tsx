@@ -127,9 +127,9 @@ export function TodoList({ todos }: Props) {
                 <p>No todos</p>
               </div>
             )}
-            {provided.placeholder}
             {todoItems}
             {todosBeingCreated}
+            {provided.placeholder}
           </div>
         )}
       </Droppable>
