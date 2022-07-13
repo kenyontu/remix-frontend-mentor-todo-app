@@ -14,7 +14,7 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: styles },
 ]
 
-function Header() {
+export function Header() {
   const hasOngoingAction = useHasOngoingAction()
 
   return (
@@ -29,10 +29,8 @@ function useHasOngoingAction() {
   const fetchers = useFetchers()
 
   for (let i = 0; i < fetchers.length; i++) {
-    if (fetchers[i].submission) return true
+    if (fetchers[i].type !== 'done') return true
   }
 
   return false
 }
-
-export { Header }
