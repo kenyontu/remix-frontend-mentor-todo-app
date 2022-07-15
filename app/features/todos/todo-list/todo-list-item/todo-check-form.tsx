@@ -27,9 +27,10 @@ export function TodoCheckForm({ todoId, checked, disabled = false }: Props) {
         name="completed"
         checked={isCompleted}
         onChange={(event) => toggleFetcher.submit(event.target.form)}
-        aria-label="Toggle complete"
       />
-      <label className="todo-check-form__check" htmlFor={id}></label>
+      <label className="todo-check-form__check" htmlFor={id}>
+        <span className="sr-only">Toggle complete</span>
+      </label>
     </toggleFetcher.Form>
   )
 }
