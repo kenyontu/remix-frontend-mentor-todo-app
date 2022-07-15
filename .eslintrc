@@ -1,3 +1,8 @@
 {
-  "extends": ["@remix-run/eslint-config", "@remix-run/eslint-config/node"]
+  "extends": [
+    "@remix-run/eslint-config",
+    "@remix-run/eslint-config/node",
+    "plugin:jsx-a11y/recommended"
+  ],
+  "plugins": ["jsx-a11y"]
 }
